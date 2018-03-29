@@ -352,6 +352,8 @@ Vc_CPP_WARNING("The Vc_IMPL macro was removed for Vc 2.0. "
 #define Vc_CONCAT(a_, b_, c_) Vc_CONCAT_IMPL(a_, b_, c_)
 // }}}
 
+#define Vc_NORMAL_MATH [[gnu::optimize("finite-math-only,no-signed-zeros")]]
+
 #if defined Vc_CLANG || defined Vc_APPLECLANG
 #  define Vc_UNREACHABLE __builtin_unreachable
 #  define Vc_NEVER_INLINE [[gnu::noinline]]

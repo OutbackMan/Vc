@@ -132,35 +132,11 @@ Vc_ALWAYS_INLINE void assertCorrectAlignment(const T *)
 }
 #endif
 
-// size_constant {{{1
-template <size_t X> using size_constant = std::integral_constant<size_t, X>;
-
 // size_tag_type {{{1
 template <class T, class A>
 auto size_tag_type_f(int)->size_constant<simd_size<T, A>::value>;
 template <class T, class A> auto size_tag_type_f(float)->size_constant<0>;
 template <class T, class A> using size_tag_type = decltype(size_tag_type_f<T, A>(0));
-
-// integer type aliases{{{1
-using uchar = unsigned char;
-using schar = signed char;
-using ushort = unsigned short;
-using uint = unsigned int;
-using ulong = unsigned long;
-using llong = long long;
-using ullong = unsigned long long;
-
-// equal_int_type{{{1
-/**
- * \internal
- * Type trait to find the equivalent integer type given a(n) (un)signed long type.
- */
-template <class T, size_t = sizeof(T)> struct equal_int_type;
-template <> struct equal_int_type< long, 4> { using type =    int; };
-template <> struct equal_int_type< long, 8> { using type =  llong; };
-template <> struct equal_int_type<ulong, 4> { using type =   uint; };
-template <> struct equal_int_type<ulong, 8> { using type = ullong; };
-template <class T> using equal_int_type_t = typename equal_int_type<T>::type;
 
 // promote_preserving_unsigned{{{1
 // work around crazy semantics of unsigned integers of lower rank than int:
@@ -485,6 +461,14 @@ template <class T, size_t Bytes, class = detail::void_t<>> struct builtin_type {
 template <class T, size_t Size>
 using builtin_type_t = typename builtin_type<T, Size * sizeof(T)>::type;
 
+template <class T> using builtin_type2_t  = typename builtin_type<T, 2>::type;
+template <class T> using builtin_type4_t  = typename builtin_type<T, 4>::type;
+template <class T> using builtin_type8_t  = typename builtin_type<T, 8>::type;
+template <class T> using builtin_type16_t = typename builtin_type<T, 16>::type;
+template <class T> using builtin_type32_t = typename builtin_type<T, 32>::type;
+template <class T> using builtin_type64_t = typename builtin_type<T, 64>::type;
+template <class T> using builtin_type128_t = typename builtin_type<T, 128>::type;
+
 // is_builtin_vector {{{1
 template <class T> struct is_builtin_vector : public std::false_type {};
 template <class T> inline constexpr bool is_builtin_vector_v = is_builtin_vector<T>::value;
@@ -493,6 +477,12 @@ template <class T> inline constexpr bool is_builtin_vector_v = is_builtin_vector
 template <class T, int N> struct fixed_size_storage_builder_wrapper;
 template <class T, int N>
 using fixed_size_storage = typename fixed_size_storage_builder_wrapper<T, N>::type;
+
+// Storage fwd decl{{{1
+template <class ValueType, size_t Size> struct Storage;
+template <class T> using storage16_t = Storage<T, 16 / sizeof(T)>;
+template <class T> using storage32_t = Storage<T, 32 / sizeof(T)>;
+template <class T> using storage64_t = Storage<T, 64 / sizeof(T)>;
 
 //}}}1
 }  // namespace detail

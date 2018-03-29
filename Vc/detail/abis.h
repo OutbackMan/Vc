@@ -71,11 +71,11 @@ template <class T, class MT, class Abi, size_t N> struct gnu_traits {
     struct mask_base2 {
         explicit operator detail::intrinsic_type_t<T, N>() const
         {
-            return static_cast<const simd_mask<T, Abi> *>(this)->d.v();
+            return static_cast<const simd_mask<T, Abi> *>(this)->d.intrin();
         }
         explicit operator detail::builtin_type_t<T, N>() const
         {
-            return static_cast<const simd_mask<T, Abi> *>(this)->d.builtin();
+            return static_cast<const simd_mask<T, Abi> *>(this)->d.d;
         }
     };
     struct mask_base1 {

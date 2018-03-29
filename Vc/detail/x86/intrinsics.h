@@ -38,294 +38,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef Vc_HAVE_SSE
 
-#ifdef Vc_MSVC
-#include <intrin.h>
-#else   // Vc_MSVC
-#include <x86intrin.h>
-#endif  // Vc_MSVC
-
 Vc_VERSIONED_NAMESPACE_BEGIN
 namespace detail
 {
-// bool_storage_member_type{{{1
-#ifdef Vc_HAVE_AVX512F
-template <> struct bool_storage_member_type< 2> { using type = __mmask8 ; };
-template <> struct bool_storage_member_type< 4> { using type = __mmask8 ; };
-template <> struct bool_storage_member_type< 8> { using type = __mmask8 ; };
-template <> struct bool_storage_member_type<16> { using type = __mmask16; };
-template <> struct bool_storage_member_type<32> { using type = __mmask32; };
-template <> struct bool_storage_member_type<64> { using type = __mmask64; };
-#endif  // Vc_HAVE_AVX512F
-
-// builtin_type{{{1
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-#ifdef Vc_GCC
-template <class T, size_t Bytes>
-struct builtin_type<
-    T, Bytes,
-    detail::void_t<std::enable_if_t<detail::conjunction_v<
-        detail::is_equal_to<Bytes % sizeof(T), 0>, detail::is_vectorizable<T>>>>> {
-    using type[[gnu::vector_size(Bytes)]] = T;
-};
-#else   // Vc_GCC
-template <> struct builtin_type<         char     ,  1> { typedef          char      type [[gnu::vector_size( 1)]]; };
-template <> struct builtin_type<unsigned char     ,  1> { typedef unsigned char      type [[gnu::vector_size( 1)]]; };
-template <> struct builtin_type<  signed char     ,  1> { typedef   signed char      type [[gnu::vector_size( 1)]]; };
-
-template <> struct builtin_type<         short    ,  2> { typedef          short     type [[gnu::vector_size( 2)]]; };
-template <> struct builtin_type<unsigned short    ,  2> { typedef unsigned short     type [[gnu::vector_size( 2)]]; };
-template <> struct builtin_type<         char     ,  2> { typedef          char      type [[gnu::vector_size( 2)]]; };
-template <> struct builtin_type<unsigned char     ,  2> { typedef unsigned char      type [[gnu::vector_size( 2)]]; };
-template <> struct builtin_type<  signed char     ,  2> { typedef   signed char      type [[gnu::vector_size( 2)]]; };
-#if WCHAR_MAX < 0x10000
-template <> struct builtin_type<         wchar_t  ,  2> { typedef          wchar_t   type [[gnu::vector_size( 2)]]; };
-#endif
-template <> struct builtin_type<         char16_t ,  2> { typedef          char16_t  type [[gnu::vector_size( 2)]]; };
-
-template <> struct builtin_type<         float    ,  4> { typedef          float     type [[gnu::vector_size( 4)]]; };
-#if LONG_MAX == INT_MAX
-template <> struct builtin_type<         long     ,  4> { typedef          long      type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<unsigned long     ,  4> { typedef unsigned long      type [[gnu::vector_size( 4)]]; };
-#endif
-template <> struct builtin_type<         int      ,  4> { typedef          int       type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<unsigned int      ,  4> { typedef unsigned int       type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<         short    ,  4> { typedef          short     type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<unsigned short    ,  4> { typedef unsigned short     type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<         char     ,  4> { typedef          char      type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<unsigned char     ,  4> { typedef unsigned char      type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<  signed char     ,  4> { typedef   signed char      type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<         wchar_t  ,  4> { typedef          wchar_t   type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<         char16_t ,  4> { typedef          char16_t  type [[gnu::vector_size( 4)]]; };
-template <> struct builtin_type<         char32_t ,  4> { typedef          char32_t  type [[gnu::vector_size( 4)]]; };
-
-template <> struct builtin_type<         double   ,  8> { typedef          double    type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         float    ,  8> { typedef          float     type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         long long,  8> { typedef          long long type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<unsigned long long,  8> { typedef unsigned long long type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         long     ,  8> { typedef          long      type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<unsigned long     ,  8> { typedef unsigned long      type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         int      ,  8> { typedef          int       type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<unsigned int      ,  8> { typedef unsigned int       type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         short    ,  8> { typedef          short     type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<unsigned short    ,  8> { typedef unsigned short     type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         char     ,  8> { typedef          char      type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<unsigned char     ,  8> { typedef unsigned char      type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<  signed char     ,  8> { typedef   signed char      type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         wchar_t  ,  8> { typedef          wchar_t   type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         char16_t ,  8> { typedef          char16_t  type [[gnu::vector_size( 8)]]; };
-template <> struct builtin_type<         char32_t ,  8> { typedef          char32_t  type [[gnu::vector_size( 8)]]; };
-
-template <> struct builtin_type<         double   , 16> { typedef          double    type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         float    , 16> { typedef          float     type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         long long, 16> { typedef          long long type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<unsigned long long, 16> { typedef unsigned long long type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         long     , 16> { typedef          long      type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<unsigned long     , 16> { typedef unsigned long      type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         int      , 16> { typedef          int       type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<unsigned int      , 16> { typedef unsigned int       type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         short    , 16> { typedef          short     type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<unsigned short    , 16> { typedef unsigned short     type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         char     , 16> { typedef          char      type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<unsigned char     , 16> { typedef unsigned char      type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<  signed char     , 16> { typedef   signed char      type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         wchar_t  , 16> { typedef          wchar_t   type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         char16_t , 16> { typedef          char16_t  type [[gnu::vector_size(16)]]; };
-template <> struct builtin_type<         char32_t , 16> { typedef          char32_t  type [[gnu::vector_size(16)]]; };
-
-template <> struct builtin_type<         double   , 32> { typedef          double    type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         float    , 32> { typedef          float     type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         long long, 32> { typedef          long long type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<unsigned long long, 32> { typedef unsigned long long type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         long     , 32> { typedef          long      type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<unsigned long     , 32> { typedef unsigned long      type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         int      , 32> { typedef          int       type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<unsigned int      , 32> { typedef unsigned int       type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         short    , 32> { typedef          short     type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<unsigned short    , 32> { typedef unsigned short     type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         char     , 32> { typedef          char      type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<unsigned char     , 32> { typedef unsigned char      type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<  signed char     , 32> { typedef   signed char      type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         wchar_t  , 32> { typedef          wchar_t   type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         char16_t , 32> { typedef          char16_t  type [[gnu::vector_size(32)]]; };
-template <> struct builtin_type<         char32_t , 32> { typedef          char32_t  type [[gnu::vector_size(32)]]; };
-
-template <> struct builtin_type<         double   , 64> { typedef          double    type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         float    , 64> { typedef          float     type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         long long, 64> { typedef          long long type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<unsigned long long, 64> { typedef unsigned long long type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         long     , 64> { typedef          long      type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<unsigned long     , 64> { typedef unsigned long      type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         int      , 64> { typedef          int       type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<unsigned int      , 64> { typedef unsigned int       type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         short    , 64> { typedef          short     type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<unsigned short    , 64> { typedef unsigned short     type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         char     , 64> { typedef          char      type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<unsigned char     , 64> { typedef unsigned char      type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<  signed char     , 64> { typedef   signed char      type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         wchar_t  , 64> { typedef          wchar_t   type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         char16_t , 64> { typedef          char16_t  type [[gnu::vector_size(64)]]; };
-template <> struct builtin_type<         char32_t , 64> { typedef          char32_t  type [[gnu::vector_size(64)]]; };
-#endif  // Vc_GCC
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
-
-// intrinsic_type{{{1
-// the following excludes bool via is_vectorizable
-template <class T>
-using void_if_integral_t = detail::void_t<std::enable_if_t<
-    detail::all<std::is_integral<T>, detail::is_vectorizable<T>>::value>>;
-#if defined Vc_HAVE_AVX512F
-template <> struct intrinsic_type<double, 64, void> { using type = __m512d; };
-template <> struct intrinsic_type< float, 64, void> { using type = __m512; };
-template <typename T> struct intrinsic_type<T, 64, void_if_integral_t<T>> { using type = __m512i; };
-#endif  // Vc_HAVE_AVX512F
-
-#if defined Vc_HAVE_AVX
-template <> struct intrinsic_type<double, 32, void> { using type = __m256d; };
-template <> struct intrinsic_type< float, 32, void> { using type = __m256; };
-template <typename T> struct intrinsic_type<T, 32, void_if_integral_t<T>> { using type = __m256i; };
-#endif  // Vc_HAVE_AVX
-
-#if defined Vc_HAVE_SSE
-template <> struct intrinsic_type< float, 16, void> { using type = __m128; };
-template <> struct intrinsic_type< float,  8, void> { using type = __m128; };
-template <> struct intrinsic_type< float,  4, void> { using type = __m128; };
-#endif  // Vc_HAVE_SSE
-#if defined Vc_HAVE_SSE2
-template <> struct intrinsic_type<double, 16, void> { using type = __m128d; };
-template <> struct intrinsic_type<double,  8, void> { using type = __m128d; };
-template <typename T> struct intrinsic_type<T, 16, void_if_integral_t<T>> { using type = __m128i; };
-template <typename T> struct intrinsic_type<T,  8, void_if_integral_t<T>> { using type = __m128i; };
-template <typename T> struct intrinsic_type<T,  4, void_if_integral_t<T>> { using type = __m128i; };
-template <typename T> struct intrinsic_type<T,  2, void_if_integral_t<T>> { using type = __m128i; };
-template <typename T> struct intrinsic_type<T,  1, void_if_integral_t<T>> { using type = __m128i; };
-#endif  // Vc_HAVE_SSE2
-
-// is_intrinsic{{{1
-template <> struct is_intrinsic<__m128> : public std::true_type {};
-static_assert(is_intrinsic_v<intrinsic_type_t<float, 4>>, "");
-#ifdef Vc_HAVE_SSE2
-template <> struct is_intrinsic<__m128d> : public std::true_type {};
-template <> struct is_intrinsic<__m128i> : public std::true_type {};
-static_assert(is_intrinsic_v<intrinsic_type_t<double, 2>>, "");
-static_assert(is_intrinsic_v<intrinsic_type_t<int, 4>>, "");
-#endif  // Vc_HAVE_SSE2
-#ifdef Vc_HAVE_AVX
-template <> struct is_intrinsic<__m256 > : public std::true_type {};
-template <> struct is_intrinsic<__m256d> : public std::true_type {};
-template <> struct is_intrinsic<__m256i> : public std::true_type {};
-static_assert(is_intrinsic_v<intrinsic_type_t<float, 8>>, "");
-static_assert(is_intrinsic_v<intrinsic_type_t<double, 4>>, "");
-static_assert(is_intrinsic_v<intrinsic_type_t<int, 8>>, "");
-#endif  // Vc_HAVE_AVX
-#ifdef Vc_HAVE_AVX512F
-template <> struct is_intrinsic<__m512 > : public std::true_type {};
-template <> struct is_intrinsic<__m512d> : public std::true_type {};
-template <> struct is_intrinsic<__m512i> : public std::true_type {};
-#endif  // Vc_HAVE_AVX512F
-
-
-// is_builtin_vector{{{1
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-template <> struct is_builtin_vector<builtin_type_t<float, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<float, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<float, 1>> : public std::true_type {};
-#ifdef Vc_HAVE_SSE2
-template <> struct is_builtin_vector<builtin_type_t<double, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<double, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< llong, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< llong, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ullong, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ullong, 1>> : public std::true_type {};
-#if LONG_MAX == INT_MAX
-template <> struct is_builtin_vector<builtin_type_t<  long, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< ulong, 4>> : public std::true_type {};
-#endif
-template <> struct is_builtin_vector<builtin_type_t<  long, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< ulong, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<  long, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< ulong, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<   int, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<   int, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<   int, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<  uint, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<  uint, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<  uint, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< short, 8>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< short, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< short, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< short, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ushort, 8>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ushort, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ushort, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ushort, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< schar,16>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< schar, 8>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< schar, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< schar, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< schar, 1>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< uchar,16>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< uchar, 8>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< uchar, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< uchar, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< uchar, 1>> : public std::true_type {};
-
-#if WCHAR_MAX < 0x10000
-template <> struct is_builtin_vector<builtin_type_t< wchar_t, 8>> : public std::true_type {};
-#endif
-template <> struct is_builtin_vector<builtin_type_t< wchar_t, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< wchar_t, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< wchar_t, 1>> : public std::true_type {};
-
-template <> struct is_builtin_vector<builtin_type_t<char16_t, 8>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char16_t, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char16_t, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char16_t, 1>> : public std::true_type {};
-
-template <> struct is_builtin_vector<builtin_type_t<char32_t, 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char32_t, 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char32_t, 1>> : public std::true_type {};
-#endif  // Vc_HAVE_SSE2
-#ifdef Vc_HAVE_AVX
-template <> struct is_builtin_vector<builtin_type_t< float, 4 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<double, 2 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< llong, 2 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ullong, 2 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<  long, 16 / sizeof( long) * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< ulong, 16 / sizeof(ulong) * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<   int, 4 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<  uint, 4 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< short, 8 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ushort, 8 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< schar,16 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< uchar,16 * 2>> : public std::true_type {};
-
-template <> struct is_builtin_vector<builtin_type_t< wchar_t, 16 / sizeof(wchar_t) * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char16_t, 8 * 2>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char32_t, 4 * 2>> : public std::true_type {};
-#endif  // Vc_HAVE_AVX
-#ifdef Vc_HAVE_AVX512F
-template <> struct is_builtin_vector<builtin_type_t< float, 4 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<double, 2 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< llong, 2 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ullong, 2 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<  long, 16 / sizeof( long) * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< ulong, 16 / sizeof(ulong) * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<   int, 4 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<  uint, 4 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< short, 8 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<ushort, 8 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< schar,16 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t< uchar,16 * 4>> : public std::true_type {};
-
-template <> struct is_builtin_vector<builtin_type_t< wchar_t, 16 / sizeof(wchar_t) * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char16_t, 8 * 4>> : public std::true_type {};
-template <> struct is_builtin_vector<builtin_type_t<char32_t, 4 * 4>> : public std::true_type {};
-#endif  // Vc_HAVE_AVX512F
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
-//}}}1
-
 namespace x86
 {
+// missing intrinsics
+#if defined Vc_GCC && Vc_GCC < 0x80000
+Vc_INTRINSIC void _mm_mask_cvtepi16_storeu_epi8(void *p, __mmask8 k, __m128i x)
+{
+    asm("vpmovwb %0,%2{%1}" :: "x"(x), "k"(k), "g"(p));
+}
+#endif
 // zeroExtend{{{1
 #ifdef Vc_HAVE_AVX
 #if defined Vc_MSVC || defined Vc_CLANG || defined Vc_APPLECLANG
@@ -476,6 +200,58 @@ template<> Vc_INTRINSIC __m512d intrin_cast(__m512d v) { return v; }
 #endif  // Vc_HAVE_AVX512F
 #endif  // Vc_HAVE_AVX
 #endif  // Vc_HAVE_SSE2
+
+// to_intrin{{{1
+constexpr Vc_INTRINSIC __m128  to_intrin(builtin_type16_t<   float> x) { return x; }
+constexpr Vc_INTRINSIC __m128d to_intrin(builtin_type16_t<  double> x) { return x; }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<  ullong> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<   llong> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<   ulong> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<    long> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<    uint> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<     int> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<  ushort> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<   short> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<   uchar> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<    char> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<   schar> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t< wchar_t> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<char16_t> x) { return reinterpret_cast<__m128i>(x); }
+constexpr Vc_INTRINSIC __m128i to_intrin(builtin_type16_t<char32_t> x) { return reinterpret_cast<__m128i>(x); }
+
+constexpr Vc_INTRINSIC __m256  to_intrin(builtin_type32_t<   float> x) { return x; }
+constexpr Vc_INTRINSIC __m256d to_intrin(builtin_type32_t<  double> x) { return x; }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<  ullong> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<   llong> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<   ulong> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<    long> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<    uint> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<     int> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<  ushort> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<   short> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<   uchar> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<    char> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<   schar> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t< wchar_t> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<char16_t> x) { return reinterpret_cast<__m256i>(x); }
+constexpr Vc_INTRINSIC __m256i to_intrin(builtin_type32_t<char32_t> x) { return reinterpret_cast<__m256i>(x); }
+
+constexpr Vc_INTRINSIC __m512  to_intrin(builtin_type64_t<   float> x) { return x; }
+constexpr Vc_INTRINSIC __m512d to_intrin(builtin_type64_t<  double> x) { return x; }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<  ullong> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<   llong> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<   ulong> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<    long> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<    uint> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<     int> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<  ushort> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<   short> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<   uchar> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<    char> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<   schar> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t< wchar_t> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<char16_t> x) { return reinterpret_cast<__m512i>(x); }
+constexpr Vc_INTRINSIC __m512i to_intrin(builtin_type64_t<char32_t> x) { return reinterpret_cast<__m512i>(x); }
 
 // insert128{{{1
 #ifdef Vc_HAVE_AVX
@@ -647,46 +423,51 @@ Vc_INTRINSIC Vc_CONST __m512i concat(__m256i a, __m256i b)
 template <typename V> Vc_INTRINSIC_L Vc_CONST_L V allone() Vc_INTRINSIC_R Vc_CONST_R;
 template <> Vc_INTRINSIC Vc_CONST __m128 allone<__m128>()
 {
-    return _mm_load_ps(reinterpret_cast<const float *>(sse_const::AllBitsSet));
+#ifdef Vc_HAVE_SSE2
+    return _mm_castsi128_ps(~__m128i());
+#else
+    return reinterpret_cast<__m128>(
+        __m128i{0xffffffffU, 0xffffffffU, 0xffffffffU, 0xffffffffU});
+#endif
 }
 #ifdef Vc_HAVE_SSE2
 template <> Vc_INTRINSIC Vc_CONST __m128i allone<__m128i>()
 {
-    return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::AllBitsSet));
+    return ~__m128i();
 }
 template <> Vc_INTRINSIC Vc_CONST __m128d allone<__m128d>()
 {
-    return _mm_load_pd(reinterpret_cast<const double *>(sse_const::AllBitsSet));
+    return _mm_castsi128_pd(~__m128i());
 }
 #endif  // Vc_HAVE_SSE2
 
 #ifdef Vc_HAVE_AVX
 template <> Vc_INTRINSIC Vc_CONST __m256 allone<__m256>()
 {
-    return _mm256_load_ps(reinterpret_cast<const float *>(avx_const::AllBitsSet));
+    return _mm256_castsi256_ps(~__m256i());
 }
 template <> Vc_INTRINSIC Vc_CONST __m256i allone<__m256i>()
 {
-    return _mm256_load_si256(reinterpret_cast<const __m256i *>(avx_const::AllBitsSet));
+    return ~__m256i();
 }
 template <> Vc_INTRINSIC Vc_CONST __m256d allone<__m256d>()
 {
-    return _mm256_load_pd(reinterpret_cast<const double *>(avx_const::AllBitsSet));
+    return _mm256_castsi256_pd(~__m256i());
 }
 #endif
 
 #ifdef Vc_HAVE_AVX512F
 template <> Vc_INTRINSIC Vc_CONST __m512 allone<__m512>()
 {
-    return _mm512_broadcast_f32x4(allone<__m128>());
+    return _mm512_castsi512_ps(~__m512i());
 }
 template <> Vc_INTRINSIC Vc_CONST __m512d allone<__m512d>()
 {
-    return _mm512_castps_pd(allone<__m512>());
+    return _mm512_castsi512_pd(~__m512i());
 }
 template <> Vc_INTRINSIC Vc_CONST __m512i allone<__m512i>()
 {
-    return _mm512_broadcast_i32x4(allone<__m128i>());
+    return ~__m512i();
 }
 #endif  // Vc_HAVE_AVX512F
 
@@ -718,18 +499,18 @@ template <class T> struct auto_cvt_t {
 template <class T> auto_cvt_t<T> auto_cvt(T x) { return {x}; }
 
 // one16/32{{{1
-Vc_INTRINSIC Vc_CONST __m128  one16( float) { return _mm_load_ps(sse_const::oneFloat); }
+Vc_INTRINSIC Vc_CONST __m128  one16( float) { return sse_const::oneFloat; }
 
 #ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC Vc_CONST __m128d one16(double) { return _mm_load_pd(sse_const::oneDouble); }
-Vc_INTRINSIC Vc_CONST __m128i one16( schar) { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::one8)); }
-Vc_INTRINSIC Vc_CONST __m128i one16( uchar) { return one16(schar()); }
-Vc_INTRINSIC Vc_CONST __m128i one16( short) { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::one16)); }
-Vc_INTRINSIC Vc_CONST __m128i one16(ushort) { return one16(short()); }
-Vc_INTRINSIC Vc_CONST __m128i one16(   int) { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::one32)); }
-Vc_INTRINSIC Vc_CONST __m128i one16(  uint) { return one16(int()); }
-Vc_INTRINSIC Vc_CONST __m128i one16( llong) { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::one64)); }
-Vc_INTRINSIC Vc_CONST __m128i one16(ullong) { return one16(llong()); }
+Vc_INTRINSIC Vc_CONST __m128d one16(double) { return sse_const::oneDouble; }
+Vc_INTRINSIC Vc_CONST __m128i one16( uchar) { return reinterpret_cast<__m128i>(sse_const::one8); }
+Vc_INTRINSIC Vc_CONST __m128i one16( schar) { return one16(uchar()); }
+Vc_INTRINSIC Vc_CONST __m128i one16(ushort) { return reinterpret_cast<__m128i>(sse_const::one16); }
+Vc_INTRINSIC Vc_CONST __m128i one16( short) { return one16(ushort()); }
+Vc_INTRINSIC Vc_CONST __m128i one16(  uint) { return reinterpret_cast<__m128i>(sse_const::one32); }
+Vc_INTRINSIC Vc_CONST __m128i one16(   int) { return one16(uint()); }
+Vc_INTRINSIC Vc_CONST __m128i one16(ullong) { return reinterpret_cast<__m128i>(sse_const::one64); }
+Vc_INTRINSIC Vc_CONST __m128i one16( llong) { return one16(ullong()); }
 Vc_INTRINSIC Vc_CONST __m128i one16(  long) { return one16(equal_int_type_t<long>()); }
 Vc_INTRINSIC Vc_CONST __m128i one16( ulong) { return one16(equal_int_type_t<ulong>()); }
 #endif
@@ -766,18 +547,18 @@ Vc_INTRINSIC Vc_CONST __m512i one64( ulong) { return one64(equal_int_type_t<ulon
 
 // signmask{{{1
 #ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC Vc_CONST __m128d signmask16(double){ return _mm_load_pd(reinterpret_cast<const double *>(sse_const::signMaskDouble)); }
+constexpr Vc_INTRINSIC x_f64 signmask16(double) { return x_f64::broadcast(-0.); }
 #endif  // Vc_HAVE_SSE2
-Vc_INTRINSIC Vc_CONST __m128  signmask16( float){ return _mm_load_ps(reinterpret_cast<const float *>(sse_const::signMaskFloat)); }
+constexpr Vc_INTRINSIC x_f32 signmask16( float) { return x_f32::broadcast(-0.f); }
 
 #ifdef Vc_HAVE_AVX
-Vc_INTRINSIC Vc_CONST __m256d signmask32(double){ return _mm256_broadcast_sd(reinterpret_cast<const double *>(&avx_const::signMaskFloat[0])); }
-Vc_INTRINSIC Vc_CONST __m256  signmask32( float){ return _mm256_broadcast_ss(reinterpret_cast<const float *>(&avx_const::signMaskFloat[1])); }
+constexpr Vc_INTRINSIC y_f64 signmask32(double) { return y_f64::broadcast(-0.); }
+constexpr Vc_INTRINSIC y_f32 signmask32( float) { return y_f32::broadcast(-0.f); }
 #endif  // Vc_HAVE_AVX
 
 #ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC Vc_CONST __m512d signmask64(double){ return _mm512_broadcast_f64x4(signmask32(double())); }
-Vc_INTRINSIC Vc_CONST __m512  signmask64( float){ return _mm512_broadcast_f32x4(signmask16(float())); }
+constexpr Vc_INTRINSIC z_f64 signmask64(double) { return z_f64::broadcast(-0.); }
+constexpr Vc_INTRINSIC z_f32 signmask64( float) { return z_f32::broadcast(-0.f); }
 #endif  // Vc_HAVE_AVX
 
 // set16/32/64{{{1
@@ -1112,61 +893,43 @@ template <> struct broadcast_t<double> {
 template <class T> broadcast_t<T> broadcast(T scalar) { return {scalar}; }
 
 // lowest16/32/64{{{1
-template <class T>
-Vc_INTRINSIC Vc_CONST typename intrinsic_type<T, 16>::type lowest16()
+template <class T> constexpr Vc_INTRINSIC storage16_t<T> lowest16()
 {
-    return broadcast16(std::numeric_limits<T>::lowest());
+    return storage16_t<T>::broadcast(std::numeric_limits<T>::lowest());
 }
 
 #ifdef Vc_HAVE_SSE2
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16< short>() { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::minShort)); }
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16<   int>() { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::signMaskFloat)); }
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16< llong>() { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::signMaskDouble)); }
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16<  long>() { return lowest16<equal_int_type_t<long>>(); }
-
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16< uchar>() { return _mm_setzero_si128(); }
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16<ushort>() { return _mm_setzero_si128(); }
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16<  uint>() { return _mm_setzero_si128(); }
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16< ulong>() { return _mm_setzero_si128(); }
-template <> Vc_INTRINSIC Vc_CONST __m128i lowest16<ullong>() { return _mm_setzero_si128(); }
+template <> constexpr Vc_INTRINSIC storage16_t< uchar> lowest16< uchar>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage16_t<ushort> lowest16<ushort>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage16_t<  uint> lowest16<  uint>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage16_t< ulong> lowest16< ulong>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage16_t<ullong> lowest16<ullong>() { return {}; }
 #endif  // Vc_HAVE_SSE2
 
 #ifdef Vc_HAVE_AVX
-template <class T>
-Vc_INTRINSIC Vc_CONST typename intrinsic_type<T, 32>::type lowest32()
+template <class T> constexpr Vc_INTRINSIC Vc_CONST storage32_t<T> lowest32()
 {
-    return broadcast32(std::numeric_limits<T>::lowest());
+    return storage32_t<T>::broadcast(std::numeric_limits<T>::lowest());
 }
 
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32<short>() { return _mm256_castps_si256(_mm256_broadcast_ss(reinterpret_cast<const float *>(sse_const::minShort))); }
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32<  int>() { return _mm256_castps_si256(signmask32(float())); }
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32<llong>() { return _mm256_castpd_si256(signmask32(double())); }
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32<  long>() { return lowest32<equal_int_type_t<long>>(); }
-
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32< uchar>() { return _mm256_setzero_si256(); }
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32<ushort>() { return _mm256_setzero_si256(); }
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32<  uint>() { return _mm256_setzero_si256(); }
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32< ulong>() { return _mm256_setzero_si256(); }
-template <> Vc_INTRINSIC Vc_CONST __m256i lowest32<ullong>() { return _mm256_setzero_si256(); }
+template <> constexpr Vc_INTRINSIC storage32_t< uchar> lowest32< uchar>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage32_t<ushort> lowest32<ushort>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage32_t<  uint> lowest32<  uint>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage32_t< ulong> lowest32< ulong>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage32_t<ullong> lowest32<ullong>() { return {}; }
 #endif  // Vc_HAVE_AVX
 
 #ifdef Vc_HAVE_AVX512F
-template <class T>
-Vc_INTRINSIC Vc_CONST typename intrinsic_type<T, 64>::type lowest64()
+template <class T> constexpr Vc_INTRINSIC Vc_CONST storage64_t<T> lowest64()
 {
-    return broadcast64(std::numeric_limits<T>::lowest());
+    return storage64_t<T>::broadcast(std::numeric_limits<T>::lowest());
 }
 
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64<short>() { return _mm512_broadcast_i32x4(lowest16<short>()); }
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64<  int>() { return _mm512_broadcast_i32x4(lowest16<  int>()); }
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64<llong>() { return _mm512_broadcast_i32x4(lowest16<llong>()); }
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64< long>() { return _mm512_broadcast_i32x4(lowest16< long>()); }
-
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64< uchar>() { return _mm512_setzero_si512(); }
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64<ushort>() { return _mm512_setzero_si512(); }
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64<  uint>() { return _mm512_setzero_si512(); }
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64< ulong>() { return _mm512_setzero_si512(); }
-template <> Vc_INTRINSIC Vc_CONST __m512i lowest64<ullong>() { return _mm512_setzero_si512(); }
+template <> constexpr Vc_INTRINSIC storage64_t< uchar> lowest64< uchar>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage64_t<ushort> lowest64<ushort>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage64_t<  uint> lowest64<  uint>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage64_t< ulong> lowest64< ulong>() { return {}; }
+template <> constexpr Vc_INTRINSIC storage64_t<ullong> lowest64<ullong>() { return {}; }
 #endif  // Vc_HAVE_AVX512F
 
 // _2_pow_31{{{1
@@ -1269,60 +1032,14 @@ template <int n> Vc_INTRINSIC __m256i srli_epi16(__m256i v)
 #endif  // Vc_HAVE_AVX2
 
 // SSE/AVX intrinsics emulation{{{1
-Vc_INTRINSIC __m128  setone_ps16()   { return _mm_load_ps(sse_const::oneFloat); }
-
-#ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC __m128d setone_pd16()   { return _mm_load_pd(sse_const::oneDouble); }
-Vc_INTRINSIC __m128i setone_epi8 ()  { return _mm_set1_epi8(1); }
-Vc_INTRINSIC __m128i setone_epu8 ()  { return setone_epi8(); }
-Vc_INTRINSIC __m128i setone_epi16()  { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::one16)); }
-Vc_INTRINSIC __m128i setone_epu16()  { return setone_epi16(); }
-Vc_INTRINSIC __m128i setone_epi32()  { return _mm_load_si128(reinterpret_cast<const __m128i *>(sse_const::one32)); }
-Vc_INTRINSIC __m128i setone_epu32()  { return setone_epi32(); }
-#endif  // Vc_HAVE_SSE2
-
-Vc_INTRINSIC __m128  setabsmask_ps_16() { return _mm_load_ps(reinterpret_cast<const float *>(sse_const::absMaskFloat)); }
-
-#ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC __m128d setabsmask_pd_16() { return _mm_load_pd(reinterpret_cast<const double *>(sse_const::absMaskDouble)); }
-#endif  // Vc_HAVE_SSE2
-
-#ifdef Vc_HAVE_AVX
-Vc_INTRINSIC __m256  setabsmask_ps_32() { return _mm256_broadcast_ss(reinterpret_cast<const float *>(&avx_const::absMaskFloat[1])); }
-Vc_INTRINSIC __m256d setabsmask_pd_32() { return _mm256_broadcast_sd(reinterpret_cast<const double *>(&avx_const::absMaskFloat[0])); }
-#endif  // Vc_HAVE_AVX
-
-#ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC __m512  setabsmask_ps_64() { return _mm512_broadcast_f32x4(setabsmask_ps_16()); }
-Vc_INTRINSIC __m512d setabsmask_pd_64() { return _mm512_broadcast_f64x4(setabsmask_pd_32()); }
-#endif // Vc_HAVE_AVX512F
-
 #ifdef Vc_HAVE_SSE2
 #if defined(Vc_IMPL_XOP)
-Vc_INTRINSIC __m128i cmplt_epu8 (__m128i a, __m128i b) { return _mm_comlt_epu8 (a, b); }
-Vc_INTRINSIC __m128i cmpgt_epu8 (__m128i a, __m128i b) { return _mm_comgt_epu8 (a, b); }
-Vc_INTRINSIC __m128i cmplt_epu16(__m128i a, __m128i b) { return _mm_comlt_epu16(a, b); }
 Vc_INTRINSIC __m128i cmpgt_epu16(__m128i a, __m128i b) { return _mm_comgt_epu16(a, b); }
 Vc_INTRINSIC __m128i cmplt_epu32(__m128i a, __m128i b) { return _mm_comlt_epu32(a, b); }
 Vc_INTRINSIC __m128i cmpgt_epu32(__m128i a, __m128i b) { return _mm_comgt_epu32(a, b); }
 Vc_INTRINSIC __m128i cmplt_epu64(__m128i a, __m128i b) { return _mm_comlt_epu64(a, b); }
 Vc_INTRINSIC __m128i cmpgt_epu64(__m128i a, __m128i b) { return _mm_comgt_epu64(a, b); }
 #else
-Vc_INTRINSIC __m128i Vc_CONST cmplt_epu8(__m128i a, __m128i b)
-{
-    return _mm_cmplt_epi8(_mm_xor_si128(a, lowest16<schar>()),
-                          _mm_xor_si128(b, lowest16<schar>()));
-}
-Vc_INTRINSIC __m128i Vc_CONST cmpgt_epu8(__m128i a, __m128i b)
-{
-    return _mm_cmpgt_epi8(_mm_xor_si128(a, lowest16<schar>()),
-                          _mm_xor_si128(b, lowest16<schar>()));
-}
-Vc_INTRINSIC __m128i Vc_CONST cmplt_epu16(__m128i a, __m128i b)
-{
-    return _mm_cmplt_epi16(_mm_xor_si128(a, lowest16<short>()),
-                           _mm_xor_si128(b, lowest16<short>()));
-}
 Vc_INTRINSIC __m128i Vc_CONST cmpgt_epu16(__m128i a, __m128i b)
 {
     return _mm_cmpgt_epi16(_mm_xor_si128(a, lowest16<short>()),
@@ -1447,38 +1164,6 @@ Vc_INTRINSIC Vc_CONST __m128i blendv_epi8(__m128i a, __m128i b, __m128i c)
 {
     return _mm_blendv_epi8(a, b, c);
 }
-Vc_INTRINSIC Vc_CONST __m128i max_epi8(__m128i a, __m128i b)
-{
-    return _mm_max_epi8(a, b);
-}
-Vc_INTRINSIC Vc_CONST __m128i max_epi32(__m128i a, __m128i b)
-{
-    return _mm_max_epi32(a, b);
-}
-Vc_INTRINSIC Vc_CONST __m128i max_epu16(__m128i a, __m128i b)
-{
-    return _mm_max_epu16(a, b);
-}
-Vc_INTRINSIC Vc_CONST __m128i max_epu32(__m128i a, __m128i b)
-{
-    return _mm_max_epu32(a, b);
-}
-Vc_INTRINSIC Vc_CONST __m128i min_epu16(__m128i a, __m128i b)
-{
-    return _mm_min_epu16(a, b);
-}
-Vc_INTRINSIC Vc_CONST __m128i min_epu32(__m128i a, __m128i b)
-{
-    return _mm_min_epu32(a, b);
-}
-Vc_INTRINSIC Vc_CONST __m128i min_epi8(__m128i a, __m128i b)
-{
-    return _mm_min_epi8(a, b);
-}
-Vc_INTRINSIC Vc_CONST __m128i min_epi32(__m128i a, __m128i b)
-{
-    return _mm_min_epi32(a, b);
-}
 Vc_INTRINSIC Vc_CONST __m128i cvtepu8_epi16(__m128i epu8)
 {
     return _mm_cvtepu8_epi16(epu8);
@@ -1534,36 +1219,6 @@ template <int index> Vc_INTRINSIC Vc_CONST int extract_epi32(__m128i v)
 #endif
 }
 
-Vc_INTRINSIC Vc_CONST __m128i max_epi8 (__m128i a, __m128i b) {
-    return blendv_epi8(b, a, _mm_cmpgt_epi8 (a, b));
-}
-Vc_INTRINSIC Vc_CONST __m128i max_epi32(__m128i a, __m128i b) {
-    return blendv_epi8(b, a, _mm_cmpgt_epi32(a, b));
-}
-//X         Vc_INTRINSIC Vc_CONST __m128i max_epu8 (__m128i a, __m128i b) {
-//X             return _mm_blendv_epi8(b, a, cmpgt_epu8 (a, b));
-//X         }
-Vc_INTRINSIC Vc_CONST __m128i max_epu16(__m128i a, __m128i b) {
-    return blendv_epi8(b, a, cmpgt_epu16(a, b));
-}
-Vc_INTRINSIC Vc_CONST __m128i max_epu32(__m128i a, __m128i b) {
-    return blendv_epi8(b, a, cmpgt_epu32(a, b));
-}
-//X         Vc_INTRINSIC Vc_CONST __m128i _mm_min_epu8 (__m128i a, __m128i b) {
-//X             return _mm_blendv_epi8(a, b, cmpgt_epu8 (a, b));
-//X         }
-Vc_INTRINSIC Vc_CONST __m128i min_epu16(__m128i a, __m128i b) {
-    return blendv_epi8(a, b, cmpgt_epu16(a, b));
-}
-Vc_INTRINSIC Vc_CONST __m128i min_epu32(__m128i a, __m128i b) {
-    return blendv_epi8(a, b, cmpgt_epu32(a, b));
-}
-Vc_INTRINSIC Vc_CONST __m128i min_epi8 (__m128i a, __m128i b) {
-    return blendv_epi8(a, b, _mm_cmpgt_epi8 (a, b));
-}
-Vc_INTRINSIC Vc_CONST __m128i min_epi32(__m128i a, __m128i b) {
-    return blendv_epi8(a, b, _mm_cmpgt_epi32(a, b));
-}
 Vc_INTRINSIC Vc_CONST __m128i cvtepu8_epi16(__m128i epu8) {
     return _mm_unpacklo_epi8(epu8, _mm_setzero_si128());
 }
@@ -1769,155 +1424,100 @@ Vc_INTRINSIC Vc_CONST int movemask_epi16(__m256i a) {
 
 // AVX512: convert_mask{{{1
 #ifdef Vc_HAVE_AVX512F
-template <size_t VectorSize> struct convert_mask_return_type;
-template <> struct convert_mask_return_type<16> { using type = __m128i; };
-template <> struct convert_mask_return_type<32> { using type = __m256i; };
-template <> struct convert_mask_return_type<64> { using type = __m512i; };
+template <size_t EntrySize, size_t VectorSize> struct convert_mask_return_type;
+template <size_t VectorSize> struct convert_mask_return_type<1, VectorSize> {
+    using type = builtin_type_t<schar, VectorSize>;
+};
+template <size_t VectorSize> struct convert_mask_return_type<2, VectorSize> {
+    using type = builtin_type_t<short, VectorSize / 2>;
+};
+template <size_t VectorSize> struct convert_mask_return_type<4, VectorSize> {
+    using type = builtin_type_t<int, VectorSize / 4>;
+};
+template <size_t VectorSize> struct convert_mask_return_type<8, VectorSize> {
+    using type = builtin_type_t<llong, VectorSize / 8>;
+};
+template <size_t EntrySize, size_t VectorSize>
+using convert_mask_return_type_t =
+    typename convert_mask_return_type<EntrySize, VectorSize>::type;
 
 template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(__mmask8);
+inline convert_mask_return_type_t<EntrySize, VectorSize> convert_mask(__mmask8);
 template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(__mmask16);
+inline convert_mask_return_type_t<EntrySize, VectorSize> convert_mask(__mmask16);
 template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(__mmask32);
+inline convert_mask_return_type_t<EntrySize, VectorSize> convert_mask(__mmask32);
 template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(__mmask64);
+inline convert_mask_return_type_t<EntrySize, VectorSize> convert_mask(__mmask64);
 
-template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(std::bitset<2> bs)
+template <size_t EntrySize, size_t VectorSize, size_t N>
+Vc_INTRINSIC auto convert_mask(std::bitset<N> bs)
 {
-    static_assert(VectorSize / EntrySize == 2, "");
-    return convert_mask<EntrySize, VectorSize>(__mmask8(bs.to_ullong()));
-}
-template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(std::bitset<4> bs)
-{
-    static_assert(VectorSize / EntrySize == 4, "");
-    return convert_mask<EntrySize, VectorSize>(__mmask8(bs.to_ullong()));
+    static_assert(VectorSize == N * EntrySize, "");
+    return convert_mask<EntrySize, VectorSize>(__mmask8(bs.to_ulong()));
 }
 
 template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(std::bitset<8> bs)
-{
-    static_assert(VectorSize / EntrySize == 8, "");
-    return convert_mask<EntrySize, VectorSize>(__mmask8(bs.to_ullong()));
-}
-
-template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(std::bitset<16> bs)
+Vc_INTRINSIC auto convert_mask(std::bitset<16> bs)
 {
     static_assert(VectorSize / EntrySize == 16, "");
-    return convert_mask<EntrySize, VectorSize>(__mmask16(bs.to_ullong()));
+    return convert_mask<EntrySize, VectorSize>(__mmask16(bs.to_ulong()));
 }
 
 template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(std::bitset<32> bs)
+Vc_INTRINSIC auto convert_mask(std::bitset<32> bs)
 {
     static_assert(VectorSize / EntrySize == 32, "");
-    return convert_mask<EntrySize, VectorSize>(__mmask32(bs.to_ullong()));
+    return convert_mask<EntrySize, VectorSize>(__mmask32(bs.to_ulong()));
 }
 
 template <size_t EntrySize, size_t VectorSize>
-inline typename convert_mask_return_type<VectorSize>::type convert_mask(std::bitset<64> bs)
+Vc_INTRINSIC auto convert_mask(std::bitset<64> bs)
 {
     static_assert(VectorSize / EntrySize == 64, "");
     return convert_mask<EntrySize, VectorSize>(__mmask64(bs.to_ullong()));
 }
 
-
 #ifdef Vc_HAVE_AVX512VL
 #ifdef Vc_HAVE_AVX512BW
-template <> Vc_INTRINSIC __m128i convert_mask<1, 16>(__mmask16 k) { return _mm_movm_epi8 (k); }
-template <> Vc_INTRINSIC __m128i convert_mask<2, 16>(__mmask8  k) { return _mm_movm_epi16(k); }
-template <> Vc_INTRINSIC __m256i convert_mask<1, 32>(__mmask32 k) { return _mm256_movm_epi8 (k); }
-template <> Vc_INTRINSIC __m256i convert_mask<2, 32>(__mmask16 k) { return _mm256_movm_epi16(k); }
+template <> Vc_INTRINSIC builtin_type_t<schar, 16> convert_mask<1, 16>(__mmask16 k) { return reinterpret_cast<builtin_type_t<schar, 16>>(_mm_movm_epi8 (k)); }
+template <> Vc_INTRINSIC builtin_type_t<short,  8> convert_mask<2, 16>(__mmask8  k) { return reinterpret_cast<builtin_type_t<short,  8>>(_mm_movm_epi16(k)); }
+template <> Vc_INTRINSIC builtin_type_t<schar, 32> convert_mask<1, 32>(__mmask32 k) { return reinterpret_cast<builtin_type_t<schar, 32>>(_mm256_movm_epi8 (k)); }
+template <> Vc_INTRINSIC builtin_type_t<short, 16> convert_mask<2, 32>(__mmask16 k) { return reinterpret_cast<builtin_type_t<short, 16>>(_mm256_movm_epi16(k)); }
 #endif  // Vc_HAVE_AVX512BW
 
 #ifdef Vc_HAVE_AVX512DQ
-template <> Vc_INTRINSIC __m128i convert_mask<4, 16>(__mmask8  k) { return _mm_movm_epi32(k); }
-template <> Vc_INTRINSIC __m128i convert_mask<8, 16>(__mmask8  k) { return _mm_movm_epi64(k); }
-template <> Vc_INTRINSIC __m256i convert_mask<4, 32>(__mmask8  k) { return _mm256_movm_epi32(k); }
-template <> Vc_INTRINSIC __m256i convert_mask<8, 32>(__mmask8  k) { return _mm256_movm_epi64(k); }
+template <> Vc_INTRINSIC builtin_type_t<  int,  4> convert_mask<4, 16>(__mmask8  k) { return reinterpret_cast<builtin_type_t<  int,  4>>(_mm_movm_epi32(k)); }
+template <> Vc_INTRINSIC builtin_type_t<llong,  2> convert_mask<8, 16>(__mmask8  k) { return reinterpret_cast<builtin_type_t<llong,  2>>(_mm_movm_epi64(k)); }
+template <> Vc_INTRINSIC builtin_type_t<  int,  8> convert_mask<4, 32>(__mmask8  k) { return reinterpret_cast<builtin_type_t<  int,  8>>(_mm256_movm_epi32(k)); }
+template <> Vc_INTRINSIC builtin_type_t<llong,  4> convert_mask<8, 32>(__mmask8  k) { return reinterpret_cast<builtin_type_t<llong,  4>>(_mm256_movm_epi64(k)); }
 #endif  // Vc_HAVE_AVX512DQ
 #else   // Vc_HAVE_AVX512VL
 #ifdef Vc_HAVE_AVX512BW
-template <> Vc_INTRINSIC __m128i convert_mask<1, 16>(__mmask16 k) { return lo128(_mm512_movm_epi8 (k)); }
-template <> Vc_INTRINSIC __m128i convert_mask<2, 16>(__mmask8  k) { return lo128(_mm512_movm_epi16(k)); }
-template <> Vc_INTRINSIC __m256i convert_mask<1, 32>(__mmask32 k) { return lo256(_mm512_movm_epi8 (k)); }
-template <> Vc_INTRINSIC __m256i convert_mask<2, 32>(__mmask16 k) { return lo256(_mm512_movm_epi16(k)); }
+template <> Vc_INTRINSIC builtin_type_t<schar, 16> convert_mask<1, 16>(__mmask16 k) { return reinterpret_cast<builtin_type_t<schar, 16>>(lo128(_mm512_movm_epi8 (k))); }
+template <> Vc_INTRINSIC builtin_type_t<short,  8> convert_mask<2, 16>(__mmask8  k) { return reinterpret_cast<builtin_type_t<short,  8>>(lo128(_mm512_movm_epi16(k))); }
+template <> Vc_INTRINSIC builtin_type_t<schar, 32> convert_mask<1, 32>(__mmask32 k) { return reinterpret_cast<builtin_type_t<schar, 32>>(lo256(_mm512_movm_epi8 (k))); }
+template <> Vc_INTRINSIC builtin_type_t<short, 16> convert_mask<2, 32>(__mmask16 k) { return reinterpret_cast<builtin_type_t<short, 16>>(lo256(_mm512_movm_epi16(k))); }
 #endif  // Vc_HAVE_AVX512BW
 
 #ifdef Vc_HAVE_AVX512DQ
-template <> Vc_INTRINSIC __m128i convert_mask<4, 16>(__mmask8  k) { return lo128(_mm512_movm_epi32(k)); }
-template <> Vc_INTRINSIC __m128i convert_mask<8, 16>(__mmask8  k) { return lo128(_mm512_movm_epi64(k)); }
-template <> Vc_INTRINSIC __m256i convert_mask<4, 32>(__mmask8  k) { return lo256(_mm512_movm_epi32(k)); }
-template <> Vc_INTRINSIC __m256i convert_mask<8, 32>(__mmask8  k) { return lo256(_mm512_movm_epi64(k)); }
+template <> Vc_INTRINSIC builtin_type_t<  int,  4> convert_mask<4, 16>(__mmask8  k) { return reinterpret_cast<builtin_type_t<  int,  4>>(lo128(_mm512_movm_epi32(k))); }
+template <> Vc_INTRINSIC builtin_type_t<llong,  2> convert_mask<8, 16>(__mmask8  k) { return reinterpret_cast<builtin_type_t<llong,  2>>(lo128(_mm512_movm_epi64(k))); }
+template <> Vc_INTRINSIC builtin_type_t<  int,  8> convert_mask<4, 32>(__mmask8  k) { return reinterpret_cast<builtin_type_t<  int,  8>>(lo256(_mm512_movm_epi32(k))); }
+template <> Vc_INTRINSIC builtin_type_t<llong,  4> convert_mask<8, 32>(__mmask8  k) { return reinterpret_cast<builtin_type_t<llong,  4>>(lo256(_mm512_movm_epi64(k))); }
 #endif  // Vc_HAVE_AVX512DQ
 #endif  // Vc_HAVE_AVX512VL
 
 #ifdef Vc_HAVE_AVX512BW
-template <> Vc_INTRINSIC __m512i convert_mask<1, 64>(__mmask64 k) { return _mm512_movm_epi8 (k); }
-template <> Vc_INTRINSIC __m512i convert_mask<2, 64>(__mmask32 k) { return _mm512_movm_epi16(k); }
+template <> Vc_INTRINSIC builtin_type_t<schar, 64> convert_mask<1, 64>(__mmask64 k) { return reinterpret_cast<builtin_type_t<schar, 64>>(_mm512_movm_epi8 (k)); }
+template <> Vc_INTRINSIC builtin_type_t<short, 32> convert_mask<2, 64>(__mmask32 k) { return reinterpret_cast<builtin_type_t<short, 32>>(_mm512_movm_epi16(k)); }
 #endif  // Vc_HAVE_AVX512BW
 
 #ifdef Vc_HAVE_AVX512DQ
-template <> Vc_INTRINSIC __m512i convert_mask<4, 64>(__mmask16 k) { return _mm512_movm_epi32(k); }
-template <> Vc_INTRINSIC __m512i convert_mask<8, 64>(__mmask8  k) { return _mm512_movm_epi64(k); }
+template <> Vc_INTRINSIC builtin_type_t<  int, 16> convert_mask<4, 64>(__mmask16 k) { return reinterpret_cast<builtin_type_t<  int, 16>>(_mm512_movm_epi32(k)); }
+template <> Vc_INTRINSIC builtin_type_t<llong,  8> convert_mask<8, 64>(__mmask8  k) { return reinterpret_cast<builtin_type_t<llong,  8>>(_mm512_movm_epi64(k)); }
 #endif  // Vc_HAVE_AVX512DQ
 #endif  // Vc_HAVE_AVX512F
-
-// negate{{{1
-Vc_ALWAYS_INLINE Vc_CONST __m128 negate(__m128 v, std::integral_constant<std::size_t, 4>)
-{
-    return _mm_xor_ps(v, signmask16(float()));
-}
-#ifdef Vc_HAVE_SSE2
-Vc_ALWAYS_INLINE Vc_CONST __m128d negate(__m128d v, std::integral_constant<std::size_t, 8>)
-{
-    return _mm_xor_pd(v, signmask16(double()));
-}
-Vc_ALWAYS_INLINE Vc_CONST __m128i negate(__m128i v, std::integral_constant<std::size_t, 4>)
-{
-#ifdef Vc_IMPL_SSSE3
-    return _mm_sign_epi32(v, allone<__m128i>());
-#else
-    return _mm_sub_epi32(zero<__m128i>(), v);
-#endif
-}
-Vc_ALWAYS_INLINE Vc_CONST __m128i negate(__m128i v, std::integral_constant<std::size_t, 2>)
-{
-#ifdef Vc_IMPL_SSSE3
-    return _mm_sign_epi16(v, allone<__m128i>());
-#else
-    return _mm_sub_epi16(zero<__m128i>(), v);
-#endif
-}
-#endif  // Vc_HAVE_SSE2
-
-#ifdef Vc_HAVE_AVX
-Vc_ALWAYS_INLINE Vc_CONST __m256 negate(__m256 v, std::integral_constant<std::size_t, 4>)
-{
-    return _mm256_xor_ps(v, signmask32(float()));
-}
-Vc_ALWAYS_INLINE Vc_CONST __m256d negate(__m256d v, std::integral_constant<std::size_t, 8>)
-{
-    return _mm256_xor_pd(v, signmask32(double()));
-}
-#ifdef Vc_HAVE_AVX2
-Vc_ALWAYS_INLINE Vc_CONST __m256i negate(__m256i v, std::integral_constant<std::size_t, 4>)
-{
-    return _mm256_sign_epi32(v, allone<__m256i>());
-}
-Vc_ALWAYS_INLINE Vc_CONST __m256i negate(__m256i v, std::integral_constant<std::size_t, 2>)
-{
-    return _mm256_sign_epi16(v, allone<__m256i>());
-}
-Vc_ALWAYS_INLINE Vc_CONST __m256i negate(__m256i v, std::integral_constant<std::size_t, 1>)
-{
-    return _mm256_sign_epi8(v, allone<__m256i>());
-}
-#endif  // Vc_HAVE_AVX2
-#endif  // Vc_HAVE_AVX
 
 // xor_{{{1
 Vc_INTRINSIC __m128  xor_(__m128  a, __m128  b) { return _mm_xor_ps(a, b); }
@@ -2071,36 +1671,6 @@ Vc_INTRINSIC __mmask32 not_(__mmask32 a) { return ~a; }
 Vc_INTRINSIC __mmask64 not_(__mmask64 a) { return ~a; }
 #endif  // Vc_HAVE_AVX512BW
 #endif  // Vc_HAVE_AVX512F
-
-// shift_left{{{1
-#ifdef Vc_HAVE_SSE2
-template <int n> Vc_INTRINSIC __m128  shift_left(__m128  v) { return _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(v), n)); }
-template <int n> Vc_INTRINSIC __m128d shift_left(__m128d v) { return _mm_castsi128_pd(_mm_slli_si128(_mm_castpd_si128(v), n)); }
-template <int n> Vc_INTRINSIC __m128i shift_left(__m128i v) { return _mm_slli_si128(v, n); }
-#endif  // Vc_HAVE_SSE2
-
-#ifdef Vc_HAVE_AVX2
-template <int n> Vc_INTRINSIC __m256 shift_left(__m256 v)
-{
-    __m256i vi = _mm256_castps_si256(v);
-    return _mm256_castsi256_ps(
-        n < 16 ? _mm256_slli_si256(vi, n)
-               : _mm256_slli_si256(_mm256_permute2x128_si256(vi, vi, 0x08), n));
-}
-template <int n> Vc_INTRINSIC __m256d shift_left(__m256d v)
-{
-    __m256i vi = _mm256_castpd_si256(v);
-    return _mm256_castsi256_pd(
-        n < 16 ? _mm256_slli_si256(vi, n)
-               : _mm256_slli_si256(_mm256_permute2x128_si256(vi, vi, 0x08), n));
-}
-template <int n> Vc_INTRINSIC __m256i shift_left(__m256i v)
-{
-    return _mm256_castsi256_pd(
-        n < 16 ? _mm256_slli_si256(v, n)
-               : _mm256_slli_si256(_mm256_permute2x128_si256(v, v, 0x08), n));
-}
-#endif
 
 // shift_right{{{1
 template <int n> Vc_INTRINSIC __m128  shift_right(__m128  v);
@@ -2941,6 +2511,24 @@ Vc_INTRINSIC void store_n_bytes(size_constant<16>, __m128i v, T *mem, F f)
 #endif  // Vc_HAVE_SSE2
 
 // }}}1
+// integer sign-extension {{{
+builtin_type_t<short,  8> constexpr Vc_INTRINSIC sign_extend16(builtin_type_t<char, 16> x) { return __builtin_ia32_pmovsxbw128(x); }
+builtin_type_t<  int,  4> constexpr Vc_INTRINSIC sign_extend32(builtin_type_t<char, 16> x) { return __builtin_ia32_pmovsxbd128(x); }
+builtin_type_t<llong,  2> constexpr Vc_INTRINSIC sign_extend64(builtin_type_t<char, 16> x) { return __builtin_ia32_pmovsxbq128(x); }
+builtin_type_t<  int,  4> constexpr Vc_INTRINSIC sign_extend32(builtin_type_t<short, 8> x) { return __builtin_ia32_pmovsxwd128(x); }
+builtin_type_t<llong,  2> constexpr Vc_INTRINSIC sign_extend64(builtin_type_t<short, 8> x) { return __builtin_ia32_pmovsxwq128(x); }
+builtin_type_t<llong,  2> constexpr Vc_INTRINSIC sign_extend64(builtin_type_t<  int, 4> x) { return __builtin_ia32_pmovsxdq128(x); }
+
+// }}}
+// integer zero-extension {{{
+builtin_type_t<short,  8> constexpr Vc_INTRINSIC zero_extend16(builtin_type_t<char, 16> x) { return __builtin_ia32_pmovzxbw128(x); }
+builtin_type_t<  int,  4> constexpr Vc_INTRINSIC zero_extend32(builtin_type_t<char, 16> x) { return __builtin_ia32_pmovzxbd128(x); }
+builtin_type_t<llong,  2> constexpr Vc_INTRINSIC zero_extend64(builtin_type_t<char, 16> x) { return __builtin_ia32_pmovzxbq128(x); }
+builtin_type_t<  int,  4> constexpr Vc_INTRINSIC zero_extend32(builtin_type_t<short, 8> x) { return __builtin_ia32_pmovzxwd128(x); }
+builtin_type_t<llong,  2> constexpr Vc_INTRINSIC zero_extend64(builtin_type_t<short, 8> x) { return __builtin_ia32_pmovzxwq128(x); }
+builtin_type_t<llong,  2> constexpr Vc_INTRINSIC zero_extend64(builtin_type_t<  int, 4> x) { return __builtin_ia32_pmovzxdq128(x); }
+
+// }}}
 }  // namespace x86
 using namespace x86;
 }  // namespace detail

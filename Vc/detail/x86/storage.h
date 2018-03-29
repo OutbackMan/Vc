@@ -31,111 +31,46 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef VC_SIMD_STORAGE_H_
 #error "Do not include detail/x86/storage.h directly. Include detail/storage.h instead."
 #endif
+#include "intrinsics.h"
 
 Vc_VERSIONED_NAMESPACE_BEGIN
 namespace detail
 {
-template <class T> using sse_simd_member_type = Storage<T, 16 / sizeof(T)>;
-template <class T> using sse_mask_member_type = Storage<T, 16 / sizeof(T)>;
-
-template <class T> using avx_simd_member_type = Storage<T, 32 / sizeof(T)>;
-template <class T> using avx_mask_member_type = Storage<T, 32 / sizeof(T)>;
-
-template <class T> using avx512_simd_member_type = Storage<T, 64 / sizeof(T)>;
-template <class T> using avx512_mask_member_type = Storage<bool, 64 / sizeof(T)>;
-template <size_t N> using avx512_mask_member_type_n = Storage<bool, N>;
-
 namespace x86
 {
-
-// x_ aliases {{{
-#ifdef Vc_HAVE_SSE
-using x_f32 = Storage< float,  4>;
-#ifdef Vc_HAVE_SSE2
-using x_f64 = Storage<double,  2>;
-using x_i08 = Storage< schar, 16>;
-using x_u08 = Storage< uchar, 16>;
-using x_i16 = Storage< short,  8>;
-using x_u16 = Storage<ushort,  8>;
-using x_i32 = Storage<   int,  4>;
-using x_u32 = Storage<  uint,  4>;
-using x_i64 = Storage< llong,  2>;
-using x_u64 = Storage<ullong,  2>;
-using x_long = Storage<long,   16 / sizeof(long)>;
-using x_ulong = Storage<ulong, 16 / sizeof(ulong)>;
-using x_long_equiv = Storage<equal_int_type_t<long>, x_long::size()>;
-using x_ulong_equiv = Storage<equal_int_type_t<ulong>, x_ulong::size()>;
-#endif  // Vc_HAVE_SSE2
-#endif  // Vc_HAVE_SSE
-
-//}}}
 #ifdef Vc_HAVE_AVX
-// y_ aliases {{{
-using y_f32 = Storage< float,  8>;
-using y_f64 = Storage<double,  4>;
-using y_i08 = Storage< schar, 32>;
-using y_u08 = Storage< uchar, 32>;
-using y_i16 = Storage< short, 16>;
-using y_u16 = Storage<ushort, 16>;
-using y_i32 = Storage<   int,  8>;
-using y_u32 = Storage<  uint,  8>;
-using y_i64 = Storage< llong,  4>;
-using y_u64 = Storage<ullong,  4>;
-using y_long = Storage<long,   32 / sizeof(long)>;
-using y_ulong = Storage<ulong, 32 / sizeof(ulong)>;
-using y_long_equiv = Storage<equal_int_type_t<long>, y_long::size()>;
-using y_ulong_equiv = Storage<equal_int_type_t<ulong>, y_ulong::size()>;
-
-//}}}
 // lo/hi/extract128 {{{
 template <typename T, size_t N>
 Vc_INTRINSIC Vc_CONST Storage<T, 16 / sizeof(T)> Vc_VDECL lo128(Storage<T, N> x)
 {
-    return lo128(x.v());
+    return lo128(x.intrin());
 }
 template <typename T, size_t N>
 Vc_INTRINSIC Vc_CONST Storage<T, 16 / sizeof(T)> Vc_VDECL hi128(Storage<T, N> x)
 {
-    return hi128(x.v());
+    return hi128(x.intrin());
 }
 
 template <int offset, typename T, size_t N>
 Vc_INTRINSIC Vc_CONST Storage<T, 16 / sizeof(T)> Vc_VDECL extract128(Storage<T, N> x)
 {
-    return extract128<offset>(x.v());
+    return extract128<offset>(x.intrin());
 }
 
 //}}}
 #endif  // Vc_HAVE_AVX
 
 #ifdef Vc_HAVE_AVX512F
-// z_ aliases {{{
-using z_f32 = Storage< float, 16>;
-using z_f64 = Storage<double,  8>;
-using z_i32 = Storage<   int, 16>;
-using z_u32 = Storage<  uint, 16>;
-using z_i64 = Storage< llong,  8>;
-using z_u64 = Storage<ullong,  8>;
-using z_long = Storage<long,   64 / sizeof(long)>;
-using z_ulong = Storage<ulong, 64 / sizeof(ulong)>;
-using z_i08 = Storage< schar, 64>;
-using z_u08 = Storage< uchar, 64>;
-using z_i16 = Storage< short, 32>;
-using z_u16 = Storage<ushort, 32>;
-using z_long_equiv = Storage<equal_int_type_t<long>, z_long::size()>;
-using z_ulong_equiv = Storage<equal_int_type_t<ulong>, z_ulong::size()>;
-
-//}}}
 // lo/hi256 {{{
 template <typename T, size_t N>
 Vc_INTRINSIC Vc_CONST Storage<T, 32 / sizeof(T)> Vc_VDECL lo256(Storage<T, N> x)
 {
-    return lo256(x.v());
+    return lo256(x.intrin());
 }
 template <typename T, size_t N>
 Vc_INTRINSIC Vc_CONST Storage<T, 32 / sizeof(T)> Vc_VDECL hi256(Storage<T, N> x)
 {
-    return hi256(x.v());
+    return hi256(x.intrin());
 }
 //}}}
 #endif  // Vc_HAVE_AVX512F
@@ -396,16 +331,160 @@ Vc_CONVERT_MASK_IMPL_END;
 
 }  // namespace x86
 
+// to_<intrin> {{{
+template <class T, size_t N> constexpr Vc_INTRINSIC __m128 to_m128(Storage<T, N> a)
+{
+    static_assert(N <= 16 / sizeof(T));
+    return a.template intrin<__m128>();
+}
+template <class T, size_t N> constexpr Vc_INTRINSIC __m128d to_m128d(Storage<T, N> a)
+{
+    static_assert(N <= 16 / sizeof(T));
+    return a.template intrin<__m128d>();
+}
+template <class T, size_t N> constexpr Vc_INTRINSIC __m128i to_m128i(Storage<T, N> a)
+{
+    static_assert(N <= 16 / sizeof(T));
+    return a.template intrin<__m128i>();
+}
+
+template <class T, size_t N> constexpr Vc_INTRINSIC __m256 to_m256(Storage<T, N> a)
+{
+    static_assert(N <= 32 / sizeof(T) && N > 16 / sizeof(T));
+    return a.template intrin<__m256>();
+}
+template <class T, size_t N> constexpr Vc_INTRINSIC __m256d to_m256d(Storage<T, N> a)
+{
+    static_assert(N <= 32 / sizeof(T) && N > 16 / sizeof(T));
+    return a.template intrin<__m256d>();
+}
+template <class T, size_t N> constexpr Vc_INTRINSIC __m256i to_m256i(Storage<T, N> a)
+{
+    static_assert(N <= 32 / sizeof(T) && N > 16 / sizeof(T));
+    return a.template intrin<__m256i>();
+}
+
+template <class T, size_t N> constexpr Vc_INTRINSIC __m512 to_m512(Storage<T, N> a)
+{
+    static_assert(N <= 64 / sizeof(T) && N > 32 / sizeof(T));
+    return a.template intrin<__m512>();
+}
+template <class T, size_t N> constexpr Vc_INTRINSIC __m512d to_m512d(Storage<T, N> a)
+{
+    static_assert(N <= 64 / sizeof(T) && N > 32 / sizeof(T));
+    return a.template intrin<__m512d>();
+}
+template <class T, size_t N> constexpr Vc_INTRINSIC __m512i to_m512i(Storage<T, N> a)
+{
+    static_assert(N <= 64 / sizeof(T) && N > 32 / sizeof(T));
+    return a.template intrin<__m512i>();
+}
+
+// }}}
+// to_storage {{{
+template <class T> class to_storage
+{
+    T d;
+
+public:
+    constexpr to_storage(T x) : d(x) {}
+    template <class U, size_t N> constexpr operator Storage<U, N>() const
+    {
+        static_assert(sizeof(builtin_type_t<U, N>) == sizeof(T));
+        return {reinterpret_cast<builtin_type_t<U, N>>(d)};
+    }
+};
+
+#ifdef Vc_HAVE_AVX512_ABI
+template <size_t N> class to_storage<std::bitset<N>>
+{
+    std::bitset<N> d;
+
+public:
+    constexpr to_storage(std::bitset<N> x) : d(x) {}
+    template <class U> constexpr operator Storage<U, N>() const
+    {
+        return reinterpret_cast<builtin_type_t<U, N>>(
+            detail::x86::convert_mask<sizeof(U), sizeof(builtin_type_t<U, N>)>(d));
+    }
+};
+
+#define Vc_TO_STORAGE(type_)                                                             \
+    template <> class to_storage<type_>                                                  \
+    {                                                                                    \
+        type_ d;                                                                         \
+                                                                                         \
+    public:                                                                              \
+        constexpr to_storage(type_ x) : d(x) {}                                          \
+        template <class U, size_t N> constexpr operator Storage<U, N>() const            \
+        {                                                                                \
+            return reinterpret_cast<builtin_type_t<U, N>>(                               \
+                detail::x86::convert_mask<sizeof(U), sizeof(builtin_type_t<U, N>)>(d));  \
+        }                                                                                \
+    }
+Vc_TO_STORAGE(__mmask8);
+Vc_TO_STORAGE(__mmask16);
+Vc_TO_STORAGE(__mmask32);
+Vc_TO_STORAGE(__mmask64);
+#undef Vc_TO_STORAGE
+#endif  // Vc_HAVE_AVX512_ABI
+
+// }}}
+// to_storage_unsafe {{{
+template <class T> class to_storage_unsafe
+{
+    T d;
+public:
+    constexpr to_storage_unsafe(T x) : d(x) {}
+    template <class U, size_t N> constexpr operator Storage<U, N>() const
+    {
+        static_assert(sizeof(builtin_type_t<U, N>) <= sizeof(T));
+        return {reinterpret_cast<builtin_type_t<U, N>>(d)};
+    }
+};
+// }}}
 // concat {{{
 // These functions are part of the Storage interface => same namespace.
 // These functions are only available when AVX or higher is enabled. In the future there
 // may be more cases (e.g. half SSE -> full SSE or even MMX -> SSE).
+#if 0//def Vc_HAVE_SSE2
+template <class T>
+Vc_INTRINSIC Vc_CONST Storage<T, 4 / sizeof(T)> Vc_VDECL
+    concat(Storage<T, 2 / sizeof(T)> a, Storage<T, 2 / sizeof(T)> b)
+{
+    static_assert(std::is_integral_v<T>);
+    return to_storage_unsafe(_mm_unpacklo_epi16(to_m128i(a), to_m128i(b)));
+}
+
+template <class T>
+Vc_INTRINSIC Vc_CONST Storage<T, 8 / sizeof(T)> Vc_VDECL
+    concat(Storage<T, 4 / sizeof(T)> a, Storage<T, 4 / sizeof(T)> b)
+{
+    static_assert(std::is_integral_v<T>);
+    return to_storage_unsafe(_mm_unpacklo_epi32(to_m128i(a), to_m128i(b)));
+}
+
+Vc_INTRINSIC Vc_CONST Storage<float, 4> Vc_VDECL concat(Storage<float, 2> a,
+                                                        Storage<float, 2> b)
+{
+    return to_storage(_mm_unpacklo_pd(to_m128d(a), to_m128d(b)));
+}
+
+template <class T>
+Vc_INTRINSIC Vc_CONST Storage<T, 16 / sizeof(T)> Vc_VDECL
+    concat(Storage<T, 8 / sizeof(T)> a, Storage<T, 8 / sizeof(T)> b)
+{
+    static_assert(std::is_integral_v<T>);
+    return to_storage(_mm_unpacklo_epi64(to_m128d(a), to_m128d(b)));
+}
+#endif  // Vc_HAVE_SSE2
+
 #ifdef Vc_HAVE_AVX
 template <class T>
 Vc_INTRINSIC Vc_CONST Storage<T, 32 / sizeof(T)> Vc_VDECL
     concat(Storage<T, 16 / sizeof(T)> a, Storage<T, 16 / sizeof(T)> b)
 {
-    return x86::concat(a.v(), b.v());
+    return x86::concat(a.intrin(), b.intrin());
 }
 #endif  // Vc_HAVE_AVX
 
@@ -414,9 +493,25 @@ template <class T>
 Vc_INTRINSIC Vc_CONST Storage<T, 64 / sizeof(T)> Vc_VDECL
     concat(Storage<T, 32 / sizeof(T)> a, Storage<T, 32 / sizeof(T)> b)
 {
-    return x86::concat(a.v(), b.v());
+    return x86::concat(a.intrin(), b.intrin());
 }
 #endif  // Vc_HAVE_AVX512F
+
+template <class T, size_t N>
+Vc_INTRINSIC Vc_CONST Storage<T, 4 * N> Vc_VDECL concat(Storage<T, N> a, Storage<T, N> b,
+                                                        Storage<T, N> c, Storage<T, N> d)
+{
+    return concat(concat(a, b), concat(c, d));
+}
+
+template <class T, size_t N>
+Vc_INTRINSIC Vc_CONST Storage<T, 8 * N> Vc_VDECL concat(Storage<T, N> a, Storage<T, N> b,
+                                                        Storage<T, N> c, Storage<T, N> d,
+                                                        Storage<T, N> e, Storage<T, N> f,
+                                                        Storage<T, N> g, Storage<T, N> h)
+{
+    return concat(concat(concat(a, b), concat(c, d)), concat(concat(e, f), concat(g, h)));
+}
 
 //}}}
 template <class To, class T, size_t Size> To convert_mask(Storage<T, Size> x)

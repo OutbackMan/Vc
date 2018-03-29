@@ -49,13 +49,13 @@ template <class Derived> struct generic_simd_impl {
     static Vc_INTRINSIC Storage<equal_int_type_t<long>, Size> Vc_VDECL
     adjust_for_long(Storage<long, Size> x)
     {
-        return {x.v()};
+        return {x.intrin()};
     }
     template <size_t Size>
     static Vc_INTRINSIC Storage<equal_int_type_t<ulong>, Size> Vc_VDECL
     adjust_for_long(Storage<ulong, Size> x)
     {
-        return {x.v()};
+        return {x.intrin()};
     }
     template <class T, size_t Size>
     static Vc_INTRINSIC const Storage<T, Size> &adjust_for_long(const Storage<T, Size> &x)
@@ -63,29 +63,32 @@ template <class Derived> struct generic_simd_impl {
         return x;
     }
 
+    // broadcast {{{2
+    template <class T, size_t N>
+    static constexpr Vc_INTRINSIC Storage<T, N> broadcast(T x, size_tag<N>) noexcept
+    {
+        return Storage<T, N>::broadcast(x);
+    }
+
     // generator {{{2
     template <class F, class T, size_t N>
     static Vc_INTRINSIC Storage<T, N> generator(F &&gen, type_tag<T>, size_tag<N>)
     {
-        return detail::generate_from_n_evaluations<N, Storage<T, N>>(
-            [&gen](auto element_idx_) { return gen(element_idx_); });
+        return detail::generate_storage<T, N>(std::forward<F>(gen));
     }
 
     // complement {{{2
     template <class T, size_t N>
-    static Vc_INTRINSIC Storage<T, N> complement(Storage<T, N> x) noexcept
+    static constexpr Vc_INTRINSIC Storage<T, N> complement(Storage<T, N> x) noexcept
     {
-        return static_cast<typename Storage<T, N>::VectorType>(
-            detail::x86::complement(adjust_for_long(x)));
+        return detail::x86::complement(x);
     }
 
     // unary minus {{{2
     template <class T, size_t N>
-    static Vc_INTRINSIC Storage<T, N> unary_minus(Storage<T, N> x) noexcept
+    static constexpr Vc_INTRINSIC Storage<T, N> unary_minus(Storage<T, N> x) noexcept
     {
-        using detail::x86::unary_minus;
-        return static_cast<typename Storage<T, N>::VectorType>(
-            unary_minus(adjust_for_long(x)));
+        return detail::x86::unary_minus(x);
     }
 
     // arithmetic operators {{{2
@@ -95,16 +98,16 @@ template <class Derived> struct generic_simd_impl {
                                                         Storage<long, N> y)              \
     {                                                                                    \
         using Adjusted = detail::Storage<equal_int_type_t<long>, N>;                     \
-        return static_cast<typename Adjusted::VectorType>(                               \
-            detail::name_(Adjusted(x.v()), Adjusted(y.v())));                            \
+        return static_cast<typename Adjusted::register_type>(                            \
+            detail::name_(Adjusted(x.intrin()), Adjusted(y.intrin())));                  \
     }                                                                                    \
     template <size_t N>                                                                  \
     static Vc_INTRINSIC Storage<unsigned long, N> Vc_VDECL name_(                        \
         Storage<unsigned long, N> x, Storage<unsigned long, N> y)                        \
     {                                                                                    \
         using Adjusted = detail::Storage<equal_int_type_t<unsigned long>, N>;            \
-        return static_cast<typename Adjusted::VectorType>(                               \
-            detail::name_(Adjusted(x.v()), Adjusted(y.v())));                            \
+        return static_cast<typename Adjusted::register_type>(                            \
+            detail::name_(Adjusted(x.intrin()), Adjusted(y.intrin())));                  \
     }                                                                                    \
     template <class T, size_t N>                                                         \
     static Vc_INTRINSIC Storage<T, N> Vc_VDECL name_(Storage<T, N> x, Storage<T, N> y)   \
@@ -125,32 +128,51 @@ template <class Derived> struct generic_simd_impl {
 #undef Vc_ARITHMETIC_OP_
 
     template <class T, size_t N>
-    static Vc_INTRINSIC Storage<T, N> Vc_VDECL bit_shift_left(Storage<T, N> x, int y)
+    static constexpr Vc_INTRINSIC Storage<T, N> Vc_VDECL bit_shift_left(Storage<T, N> x,
+                                                                        int y)
     {
-        return static_cast<typename Storage<T, N>::VectorType>(
-            detail::bit_shift_left(adjust_for_long(x), y));
+        return detail::x86::bit_shift_left(x, y);
     }
     template <class T, size_t N>
-    static Vc_INTRINSIC Storage<T, N> Vc_VDECL bit_shift_right(Storage<T, N> x, int y)
+    static constexpr Vc_INTRINSIC Storage<T, N> Vc_VDECL bit_shift_right(Storage<T, N> x,
+                                                                         int y)
     {
-        return static_cast<typename Storage<T, N>::VectorType>(
-            detail::bit_shift_right(adjust_for_long(x), y));
+        return detail::x86::bit_shift_right(x, y);
+    }
+
+    // min, max, clamp {{{2
+    template <class T, size_t N>
+    Vc_NORMAL_MATH static constexpr Vc_INTRINSIC Storage<T, N> min(Storage<T, N> a,
+                                                                   Storage<T, N> b)
+    {
+        return a.d < b.d ? a.d : b.d;
+    }
+    template <class T, size_t N>
+    Vc_NORMAL_MATH static constexpr Vc_INTRINSIC Storage<T, N> max(Storage<T, N> a,
+                                                                   Storage<T, N> b)
+    {
+        return a.d > b.d ? a.d : b.d;
+    }
+
+    template <class T, size_t N>
+    Vc_NORMAL_MATH static constexpr Vc_INTRINSIC std::pair<Storage<T, N>, Storage<T, N>>
+    minmax(Storage<T, N> a, Storage<T, N> b)
+    {
+        return {a.d < b.d ? a.d : b.d, a.d < b.d ? b.d : a.d};
     }
 
     // sqrt {{{2
     template <class T, size_t N>
     static Vc_INTRINSIC Storage<T, N> sqrt(Storage<T, N> x) noexcept
     {
-        using detail::x86::sqrt;
-        return sqrt(adjust_for_long(x));
+        return detail::x86::sqrt(x);
     }
 
     // abs {{{2
     template <class T, size_t N>
     static Vc_INTRINSIC Storage<T, N> abs(Storage<T, N> x) noexcept
     {
-        using detail::x86::abs;
-        return abs(adjust_for_long(x));
+        return detail::x86::abs(adjust_for_long(x));
     }
 
     // increment & decrement{{{2
@@ -278,18 +300,9 @@ template <class abi, template <class> class mask_member_type> struct generic_mas
     template <size_t N, class T>
     static Vc_INTRINSIC mask_member_type<T> from_bitset(std::bitset<N> bits, type_tag<T>)
     {
-#ifdef Vc_HAVE_AVX512BW
-        if (sizeof(T) <= 2u) {
-            return detail::intrin_cast<detail::intrinsic_type_t<T, N>>(
-                x86::convert_mask<sizeof(T), sizeof(mask_member_type<T>)>(bits));
-        }
-#endif  // Vc_HAVE_AVX512BW
-#ifdef Vc_HAVE_AVX512DQ
-        if (sizeof(T) >= 4u) {
-            return detail::intrin_cast<detail::intrinsic_type_t<T, N>>(
-                x86::convert_mask<sizeof(T), sizeof(mask_member_type<T>)>(bits));
-        }
-#endif  // Vc_HAVE_AVX512DQ
+#ifdef Vc_HAVE_AVX512_ABI
+        return to_storage(bits);
+#else  // Vc_HAVE_AVX512_ABI
         using U = std::conditional_t<sizeof(T) == 8, ullong,
                   std::conditional_t<sizeof(T) == 4, uint,
                   std::conditional_t<sizeof(T) == 2, ushort,
@@ -315,6 +328,7 @@ template <class abi, template <class> class mask_member_type> struct generic_mas
             return detail::intrin_cast<detail::intrinsic_type_t<T, N>>(
                 detail::data(tmp != V()));
         }
+#endif  // Vc_HAVE_AVX512_ABI
     }
 
     // masked_assign{{{2

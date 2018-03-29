@@ -117,7 +117,7 @@ public:
     // load constructor
     template <class Flags>
     Vc_ALWAYS_INLINE simd_mask(const value_type *mem, Flags f)
-        : d(impl::load(mem, f, size_tag))
+        : d(detail::to_storage(impl::load(mem, f, size_tag)))
     {
     }
     template <class Flags> Vc_ALWAYS_INLINE simd_mask(const value_type *mem, simd_mask k, Flags f) : d{}
@@ -128,7 +128,7 @@ public:
     // loads [simd_mask.load]
     template <class Flags> Vc_ALWAYS_INLINE void copy_from(const value_type *mem, Flags f)
     {
-        d = static_cast<decltype(d)>(impl::load(mem, f, size_tag));
+        d = detail::to_storage(impl::load(mem, f, size_tag));
     }
 
     // stores [simd_mask.store]

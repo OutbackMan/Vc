@@ -75,7 +75,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
     using abi = simd_abi::Avx512;
     template <class T> static constexpr size_t size() { return simd_size_v<T, abi>; }
     template <class T> using simd_member_type = avx512_simd_member_type<T>;
-    template <class T> using intrinsic_type = typename simd_member_type<T>::VectorType;
+    template <class T> using intrinsic_type = intrinsic_type_t<T, 64 / sizeof(T)>;
     template <class T> using mask_member_type = avx512_mask_member_type<T>;
     template <class T> using simd = Vc::simd<T, abi>;
     template <class T> using simd_mask = Vc::simd_mask<T, abi>;
@@ -87,36 +87,6 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
     static Vc_INTRINSIC simd<T> make_simd(simd_member_type<T> x)
     {
         return {detail::private_init, x};
-    }
-
-    // broadcast {{{2
-    static Vc_INTRINSIC intrinsic_type<double> broadcast(double x, size_tag<8>) noexcept
-    {
-        return _mm512_set1_pd(x);
-    }
-    static Vc_INTRINSIC intrinsic_type<float> broadcast(float x, size_tag<16>) noexcept
-    {
-        return _mm512_set1_ps(x);
-    }
-    template <class T>
-    static Vc_INTRINSIC intrinsic_type<T> broadcast(T x, size_tag<8>) noexcept
-    {
-        return _mm512_set1_epi64(x);
-    }
-    template <class T>
-    static Vc_INTRINSIC intrinsic_type<T> broadcast(T x, size_tag<16>) noexcept
-    {
-        return _mm512_set1_epi32(x);
-    }
-    template <class T>
-    static Vc_INTRINSIC intrinsic_type<T> broadcast(T x, size_tag<32>) noexcept
-    {
-        return _mm512_set1_epi16(x);
-    }
-    template <class T>
-    static Vc_INTRINSIC intrinsic_type<T> broadcast(T x, size_tag<64>) noexcept
-    {
-        return _mm512_set1_epi8(x);
     }
 
     // load {{{2
@@ -149,14 +119,14 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
 
     // load without conversion{{{3
     template <class T, class F>
-    static Vc_INTRINSIC intrinsic_type<T> load(const T *mem, F f, type_tag<T>) Vc_NOEXCEPT_OR_IN_TEST
+    static Vc_INTRINSIC simd_member_type<T> load(const T *mem, F f, type_tag<T>) Vc_NOEXCEPT_OR_IN_TEST
     {
         return detail::load64(mem, f);
     }
 
     // convert from an AVX512 load{{{3
     template <class T, class U, class F>
-    static Vc_INTRINSIC intrinsic_type<T> load(
+    static Vc_INTRINSIC simd_member_type<T> load(
         const U *mem, F f, type_tag<T>,
         enable_if<sizeof(T) == sizeof(U)> = nullarg) Vc_NOEXCEPT_OR_IN_TEST
     {
@@ -165,7 +135,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
 
     // convert from an AVX load{{{3
     template <class T, class U, class F>
-    static Vc_INTRINSIC intrinsic_type<T> load(
+    static Vc_INTRINSIC simd_member_type<T> load(
         const U *mem, F f, type_tag<T>,
         enable_if<sizeof(T) == sizeof(U) * 2> = nullarg) Vc_NOEXCEPT_OR_IN_TEST
     {
@@ -174,7 +144,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
 
     // convert from an SSE load{{{3
     template <class T, class U, class F>
-    static Vc_INTRINSIC intrinsic_type<T> load(
+    static Vc_INTRINSIC simd_member_type<T> load(
         const U *mem, F f, type_tag<T>,
         enable_if<sizeof(T) == sizeof(U) * 4> = nullarg) Vc_NOEXCEPT_OR_IN_TEST
     {
@@ -183,7 +153,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
 
     // convert from a half SSE load{{{3
     template <class T, class U, class F>
-    static Vc_INTRINSIC intrinsic_type<T> load(
+    static Vc_INTRINSIC simd_member_type<T> load(
         const U *mem, F f, type_tag<T>,
         enable_if<sizeof(T) == sizeof(U) * 8> = nullarg) Vc_NOEXCEPT_OR_IN_TEST
     {
@@ -192,7 +162,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
 
     // convert from a 2-AVX512 load{{{3
     template <class T, class U, class F>
-    static Vc_INTRINSIC intrinsic_type<T> load(
+    static Vc_INTRINSIC simd_member_type<T> load(
         const U *mem, F f, type_tag<T>,
         enable_if<sizeof(T) * 2 == sizeof(U)> = nullarg) Vc_NOEXCEPT_OR_IN_TEST
     {
@@ -202,7 +172,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
 
     // convert from a 4-AVX512 load{{{3
     template <class T, class U, class F>
-    static Vc_INTRINSIC intrinsic_type<T> load(
+    static Vc_INTRINSIC simd_member_type<T> load(
         const U *mem, F f, type_tag<T>,
         enable_if<sizeof(T) * 4 == sizeof(U)> = nullarg) Vc_NOEXCEPT_OR_IN_TEST
     {
@@ -213,7 +183,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
 
     // convert from a 8-AVX512 load{{{3
     template <class T, class U, class F>
-    static Vc_INTRINSIC intrinsic_type<T> load(
+    static Vc_INTRINSIC simd_member_type<T> load(
         const U *mem, F f, type_tag<T>,
         enable_if<sizeof(T) * 8 == sizeof(U)> = nullarg) Vc_NOEXCEPT_OR_IN_TEST
     {
@@ -450,7 +420,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
     template <class T>
     static Vc_INTRINSIC mask_member_type<T> negate(simd_member_type<T> x) noexcept
     {
-        return equal_to(x, x86::zero<typename simd_member_type<T>::VectorType>());
+        return equal_to(x, x86::zero<typename simd_member_type<T>::register_type>());
     }
 
     // reductions {{{2
@@ -465,89 +435,8 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
                                      binary_op);
     }
 
-    // min, max {{{2
-#define Vc_MINMAX_(T_, suffix_)                                                          \
-    static Vc_INTRINSIC simd_member_type<T_> min(simd_member_type<T_> a,           \
-                                                    simd_member_type<T_> b)           \
-    {                                                                                    \
-        return _mm512_min_##suffix_(a, b);                                               \
-    }                                                                                    \
-    static Vc_INTRINSIC simd_member_type<T_> max(simd_member_type<T_> a,           \
-                                                    simd_member_type<T_> b)           \
-    {                                                                                    \
-        return _mm512_max_##suffix_(a, b);                                               \
-    }                                                                                    \
-    Vc_NOTHING_EXPECTING_SEMICOLON
-    Vc_MINMAX_(double, pd);
-    Vc_MINMAX_( float, ps);
-    Vc_MINMAX_( llong, epi64);
-    Vc_MINMAX_(ullong, epu64);
-    Vc_MINMAX_(   int, epi32);
-    Vc_MINMAX_(  uint, epu32);
-#ifdef Vc_HAVE_FULL_AVX512_ABI
-    Vc_MINMAX_( short, epi16);
-    Vc_MINMAX_(ushort, epu16);
-    Vc_MINMAX_( schar, epi8);
-    Vc_MINMAX_( uchar, epu8);
-#endif  // Vc_HAVE_FULL_AVX512_ABI
-#undef Vc_MINMAX_
-    static Vc_INTRINSIC __m512i min(simd_member_type<long> a,
-                                    simd_member_type<long> b)
-    {
-        return min(simd_member_type<equal_int_type_t<long>>(a),
-                   simd_member_type<equal_int_type_t<long>>(b));
-    }
-    static Vc_INTRINSIC __m512i max(simd_member_type<long> a,
-                                    simd_member_type<long> b)
-    {
-        return max(simd_member_type<equal_int_type_t<long>>(a),
-                   simd_member_type<equal_int_type_t<long>>(b));
-    }
-
-    static Vc_INTRINSIC __m512i min(simd_member_type<ulong> a,
-                                    simd_member_type<ulong> b)
-    {
-        return min(simd_member_type<equal_int_type_t<ulong>>(a),
-                   simd_member_type<equal_int_type_t<ulong>>(b));
-    }
-    static Vc_INTRINSIC __m512i max(simd_member_type<ulong> a,
-                                    simd_member_type<ulong> b)
-    {
-        return max(simd_member_type<equal_int_type_t<ulong>>(a),
-                   simd_member_type<equal_int_type_t<ulong>>(b));
-    }
-
-    template <class T>
-    static Vc_INTRINSIC std::pair<simd_member_type<T>, simd_member_type<T>> minmax(
-        simd_member_type<T> a, simd_member_type<T> b)
-    {
-        return {min(a, b), max(a, b)};
-    }
-
-
     // compares {{{2
-#if 0  // defined Vc_USE_BUILTIN_VECTOR_TYPES
-    template <class T>
-    static Vc_INTRINSIC simd_mask<T> equal_to(simd_member_type<T> x, simd_member_type<T> y)
-    {
-        return x.builtin() == y.builtin()};
-    }
-    template <class T>
-    static Vc_INTRINSIC simd_mask<T> not_equal_to(simd_member_type<T> x, simd_member_type<T> y)
-    {
-        return x.builtin() != y.builtin()};
-    }
-    template <class T>
-    static Vc_INTRINSIC simd_mask<T> less(simd_member_type<T> x, simd_member_type<T> y)
-    {
-        return x.builtin() < y.builtin()};
-    }
-    template <class T>
-    static Vc_INTRINSIC simd_mask<T> less_equal(simd_member_type<T> x, simd_member_type<T> y)
-    {
-        return x.builtin() <= y.builtin()};
-    }
-#else  // Vc_USE_BUILTIN_VECTOR_TYPES
+    // we cannot use built in compares since they return __m512i instead of real bitmasks
     static Vc_INTRINSIC mask_member_type<double> equal_to    (simd_member_type<double> x, simd_member_type<double> y) { return _mm512_cmp_pd_mask(x, y, _MM_CMPINT_EQ); }
     static Vc_INTRINSIC mask_member_type<double> not_equal_to(simd_member_type<double> x, simd_member_type<double> y) { return _mm512_cmp_pd_mask(x, y, _MM_CMPINT_NE); }
     static Vc_INTRINSIC mask_member_type<double> less        (simd_member_type<double> x, simd_member_type<double> y) { return _mm512_cmp_pd_mask(x, y, _MM_CMPINT_LT); }
@@ -564,12 +453,12 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
     static Vc_INTRINSIC mask_member_type<   int> equal_to(simd_member_type<   int> x, simd_member_type<   int> y) { return _mm512_cmpeq_epi32_mask(x, y); }
     static Vc_INTRINSIC mask_member_type<  uint> equal_to(simd_member_type<  uint> x, simd_member_type<  uint> y) { return _mm512_cmpeq_epi32_mask(x, y); }
 
-    static Vc_INTRINSIC mask_member_type< llong> not_equal_to(simd_member_type< llong> x, simd_member_type< llong> y) { return detail::not_(_mm512_cmpeq_epi64_mask(x, y)); }
-    static Vc_INTRINSIC mask_member_type<ullong> not_equal_to(simd_member_type<ullong> x, simd_member_type<ullong> y) { return detail::not_(_mm512_cmpeq_epi64_mask(x, y)); }
-    static Vc_INTRINSIC mask_member_type<  long> not_equal_to(simd_member_type<  long> x, simd_member_type<  long> y) { return detail::not_(detail::cmpeq_long_mask(x, y)); }
-    static Vc_INTRINSIC mask_member_type< ulong> not_equal_to(simd_member_type< ulong> x, simd_member_type< ulong> y) { return detail::not_(detail::cmpeq_long_mask(x, y)); }
-    static Vc_INTRINSIC mask_member_type<   int> not_equal_to(simd_member_type<   int> x, simd_member_type<   int> y) { return detail::not_(_mm512_cmpeq_epi32_mask(x, y)); }
-    static Vc_INTRINSIC mask_member_type<  uint> not_equal_to(simd_member_type<  uint> x, simd_member_type<  uint> y) { return detail::not_(_mm512_cmpeq_epi32_mask(x, y)); }
+    static Vc_INTRINSIC mask_member_type< llong> not_equal_to(simd_member_type< llong> x, simd_member_type< llong> y) { return ~_mm512_cmpeq_epi64_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<ullong> not_equal_to(simd_member_type<ullong> x, simd_member_type<ullong> y) { return ~_mm512_cmpeq_epi64_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<  long> not_equal_to(simd_member_type<  long> x, simd_member_type<  long> y) { return ~detail::cmpeq_long_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type< ulong> not_equal_to(simd_member_type< ulong> x, simd_member_type< ulong> y) { return ~detail::cmpeq_long_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<   int> not_equal_to(simd_member_type<   int> x, simd_member_type<   int> y) { return ~_mm512_cmpeq_epi32_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<  uint> not_equal_to(simd_member_type<  uint> x, simd_member_type<  uint> y) { return ~_mm512_cmpeq_epi32_mask(x, y); }
 
     static Vc_INTRINSIC mask_member_type< llong> less(simd_member_type< llong> x, simd_member_type< llong> y) { return _mm512_cmplt_epi64_mask(x, y); }
     static Vc_INTRINSIC mask_member_type<ullong> less(simd_member_type<ullong> x, simd_member_type<ullong> y) { return _mm512_cmplt_epu64_mask(x, y); }
@@ -586,27 +475,31 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
     static Vc_INTRINSIC mask_member_type<  uint> less_equal(simd_member_type<  uint> x, simd_member_type<  uint> y) { return _mm512_cmple_epu32_mask(x, y); }
 
 #ifdef Vc_HAVE_FULL_AVX512_ABI
+    static_assert(std::is_signed_v<char>);
     static Vc_INTRINSIC mask_member_type< short> equal_to(simd_member_type< short> x, simd_member_type< short> y) { return _mm512_cmpeq_epi16_mask(x, y); }
     static Vc_INTRINSIC mask_member_type<ushort> equal_to(simd_member_type<ushort> x, simd_member_type<ushort> y) { return _mm512_cmpeq_epi16_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<  char> equal_to(simd_member_type<  char> x, simd_member_type<  char> y) { return _mm512_cmpeq_epi8_mask(x, y); }
     static Vc_INTRINSIC mask_member_type< schar> equal_to(simd_member_type< schar> x, simd_member_type< schar> y) { return _mm512_cmpeq_epi8_mask(x, y); }
     static Vc_INTRINSIC mask_member_type< uchar> equal_to(simd_member_type< uchar> x, simd_member_type< uchar> y) { return _mm512_cmpeq_epi8_mask(x, y); }
 
-    static Vc_INTRINSIC mask_member_type< short> not_equal_to(simd_member_type< short> x, simd_member_type< short> y) { return detail::not_(_mm512_cmpeq_epi16_mask(x, y)); }
-    static Vc_INTRINSIC mask_member_type<ushort> not_equal_to(simd_member_type<ushort> x, simd_member_type<ushort> y) { return detail::not_(_mm512_cmpeq_epi16_mask(x, y)); }
-    static Vc_INTRINSIC mask_member_type< schar> not_equal_to(simd_member_type< schar> x, simd_member_type< schar> y) { return detail::not_(_mm512_cmpeq_epi8_mask(x, y)); }
-    static Vc_INTRINSIC mask_member_type< uchar> not_equal_to(simd_member_type< uchar> x, simd_member_type< uchar> y) { return detail::not_(_mm512_cmpeq_epi8_mask(x, y)); }
+    static Vc_INTRINSIC mask_member_type< short> not_equal_to(simd_member_type< short> x, simd_member_type< short> y) { return ~_mm512_cmpeq_epi16_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<ushort> not_equal_to(simd_member_type<ushort> x, simd_member_type<ushort> y) { return ~_mm512_cmpeq_epi16_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<  char> not_equal_to(simd_member_type<  char> x, simd_member_type<  char> y) { return ~_mm512_cmpeq_epi8_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type< schar> not_equal_to(simd_member_type< schar> x, simd_member_type< schar> y) { return ~_mm512_cmpeq_epi8_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type< uchar> not_equal_to(simd_member_type< uchar> x, simd_member_type< uchar> y) { return ~_mm512_cmpeq_epi8_mask(x, y); }
 
     static Vc_INTRINSIC mask_member_type< short> less(simd_member_type< short> x, simd_member_type< short> y) { return _mm512_cmplt_epi16_mask(x, y); }
     static Vc_INTRINSIC mask_member_type<ushort> less(simd_member_type<ushort> x, simd_member_type<ushort> y) { return _mm512_cmplt_epu16_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<  char> less(simd_member_type<  char> x, simd_member_type<  char> y) { return _mm512_cmplt_epi8_mask (x, y); }
     static Vc_INTRINSIC mask_member_type< schar> less(simd_member_type< schar> x, simd_member_type< schar> y) { return _mm512_cmplt_epi8_mask (x, y); }
     static Vc_INTRINSIC mask_member_type< uchar> less(simd_member_type< uchar> x, simd_member_type< uchar> y) { return _mm512_cmplt_epu8_mask (x, y); }
 
     static Vc_INTRINSIC mask_member_type< short> less_equal(simd_member_type< short> x, simd_member_type< short> y) { return _mm512_cmple_epi16_mask(x, y); }
     static Vc_INTRINSIC mask_member_type<ushort> less_equal(simd_member_type<ushort> x, simd_member_type<ushort> y) { return _mm512_cmple_epu16_mask(x, y); }
+    static Vc_INTRINSIC mask_member_type<  char> less_equal(simd_member_type<  char> x, simd_member_type<  char> y) { return _mm512_cmple_epi8_mask (x, y); }
     static Vc_INTRINSIC mask_member_type< schar> less_equal(simd_member_type< schar> x, simd_member_type< schar> y) { return _mm512_cmple_epi8_mask (x, y); }
     static Vc_INTRINSIC mask_member_type< uchar> less_equal(simd_member_type< uchar> x, simd_member_type< uchar> y) { return _mm512_cmple_epu8_mask (x, y); }
 #endif  // Vc_HAVE_FULL_AVX512_ABI
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
 
     // math {{{2
     // sqrt {{{3
@@ -869,7 +762,7 @@ struct avx512_simd_impl : public generic_simd_impl<avx512_simd_impl> {
     // smart_reference access {{{2
     template <class T> static Vc_INTRINSIC T get(simd_member_type<T> v, int i) noexcept
     {
-        return v.m(i);
+        return v[i];
     }
     template <class T, class U>
     static Vc_INTRINSIC void set(simd_member_type<T> &v, int i, U &&x) noexcept
@@ -895,7 +788,7 @@ struct avx512_mask_impl
     template <size_t N>
     static Vc_INTRINSIC std::bitset<N> to_bitset(mask_member_type<N> v) noexcept
     {
-        return v.v();
+        return v.intrin();
     }
 
     // from_bitset{{{2
@@ -985,7 +878,7 @@ struct avx512_mask_impl
                                          mask_member_type<8> mask, const bool *mem,
                                          F) noexcept
     {
-        const auto a = _mm_mask_loadu_epi8(zero<__m128i>(), mask.v(), mem);
+        const auto a = _mm_mask_loadu_epi8(zero<__m128i>(), mask, mem);
         merge = (merge & ~mask) | _mm_test_epi8_mask(a, a);
     }
 
@@ -994,7 +887,7 @@ struct avx512_mask_impl
                                          mask_member_type<16> mask, const bool *mem,
                                          F) noexcept
     {
-        const auto a = _mm_mask_loadu_epi8(zero<__m128i>(), mask.v(), mem);
+        const auto a = _mm_mask_loadu_epi8(zero<__m128i>(), mask, mem);
         merge = (merge & ~mask) | _mm_test_epi8_mask(a, a);
     }
 
@@ -1003,7 +896,7 @@ struct avx512_mask_impl
                                          mask_member_type<32> mask, const bool *mem,
                                          F) noexcept
     {
-        const auto a = _mm256_mask_loadu_epi8(zero<__m256i>(), mask.v(), mem);
+        const auto a = _mm256_mask_loadu_epi8(zero<__m256i>(), mask, mem);
         merge = (merge & ~mask) | _mm256_test_epi8_mask(a, a);
     }
 
@@ -1012,7 +905,7 @@ struct avx512_mask_impl
                                          mask_member_type<64> mask, const bool *mem,
                                          F) noexcept
     {
-        const auto a = _mm512_mask_loadu_epi8(zero<__m512i>(), mask.v(), mem);
+        const auto a = _mm512_mask_loadu_epi8(zero<__m512i>(), mask, mem);
         merge = (merge & ~mask) | _mm512_test_epi8_mask(a, a);
     }
 
@@ -1032,176 +925,101 @@ struct avx512_mask_impl
 
     // store {{{2
     template <class F>
-    static Vc_INTRINSIC void store(mask_member_type<8> v, bool *mem, F,
+    static Vc_INTRINSIC void store(mask_member_type<8> v, bool *mem, F f,
                                    size_tag<8>) noexcept
     {
+        x86::store8(
 #if defined Vc_HAVE_AVX512VL && defined Vc_HAVE_AVX512BW
-        _mm_storel_epi64(reinterpret_cast<__m128i *>(mem),
-                         and_(one16(uchar()), _mm_movm_epi8(v.v())));
-#elif defined Vc_HAVE_AVX512DQ
-        _mm_storel_epi64(
-            reinterpret_cast<__m128i *>(mem),
-            _mm512_cvtepi64_epi8(_mm512_srli_epi64(_mm512_movm_epi64(v.v()), 63)));
+            _mm_maskz_set1_epi8(v, 1),
 #elif defined Vc_IS_AMD64
-        *reinterpret_cast<may_alias<ullong> *>(mem) =
-            _pdep_u64(v.v(), 0x0101010101010101ULL);
+            make_storage<ullong>(_pdep_u64(v, 0x0101010101010101ULL), 0ull),
 #else
-        *reinterpret_cast<may_alias<uint> *>(mem) =
-            _pdep_u32(v.v(), 0x01010101U);
-        *reinterpret_cast<may_alias<uint> *>(mem + 4) =
-            _pdep_u32(v.v() >> 4, 0x01010101U);
+            make_storage<uint>(_pdep_u32(v, 0x01010101U), _pdep_u32(v >> 4, 0x01010101U)),
 #endif
+            mem, f);
     }
     template <class F>
     static Vc_INTRINSIC void store(mask_member_type<16> v, bool *mem, F f,
                                    size_tag<16>) noexcept
     {
 #if defined Vc_HAVE_AVX512VL && defined Vc_HAVE_AVX512BW
-        x86::store16(and_(one16(uchar()), _mm_movm_epi8(v.v())), mem, f);
-#elif defined Vc_HAVE_AVX512DQ
-        store16(_mm512_cvtepi32_epi8(_mm512_srli_epi32(_mm512_movm_epi32(v.v()), 31)),
-                mem, f);
-#elif defined Vc_IS_AMD64
-        *reinterpret_cast<may_alias<ullong> *>(mem) =
-            _pdep_u64(v.v(), 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 8) =
-            _pdep_u64(v.v() >> 8, 0x0101010101010101ULL);
-        unused(f);
+        x86::store16(_mm_maskz_set1_epi8(v, 1), mem, f);
 #else
-        execute_n_times<4>([&](auto i) {
-            using namespace Vc::detail;
-            constexpr uint offset = 4u * i;
-            *reinterpret_cast<may_alias<uint> *>(mem + offset) =
-                _pdep_u32(v.v() >> offset, 0x01010101U);
-        });
+        _mm512_mask_cvtepi32_storeu_epi8(mem, ~__mmask16(),
+                                         _mm512_maskz_set1_epi32(v, 1));
         unused(f);
 #endif
     }
+#ifdef Vc_HAVE_AVX512BW
     template <class F>
     static Vc_INTRINSIC void store(mask_member_type<32> v, bool *mem, F f,
                                    size_tag<32>) noexcept
     {
-#if defined Vc_HAVE_AVX512VL && defined Vc_HAVE_AVX512BW
-        store32(and_(one32(uchar()), _mm256_movm_epi8(v.v())), mem, f);
-#elif defined Vc_HAVE_AVX512DQ
-        store32(
-            concat(_mm512_cvtepi32_epi8(_mm512_srli_epi32(_mm512_movm_epi32(v.v()), 31)),
-                   _mm512_cvtepi32_epi8(
-                       _mm512_srli_epi32(_mm512_movm_epi32(v.v() >> 16), 31))),
-            mem, f);
-#elif defined Vc_IS_AMD64
-        *reinterpret_cast<may_alias<ullong> *>(mem) =
-            _pdep_u64(v.v(), 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 8) =
-            _pdep_u64(v.v() >> 8, 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 16) =
-            _pdep_u64(v.v() >> 16, 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 24) =
-            _pdep_u64(v.v() >> 24, 0x0101010101010101ULL);
-        unused(f);
+#if defined Vc_HAVE_AVX512VL
+        x86::store32(_mm256_maskz_set1_epi8(v, 1), mem, f);
 #else
-        execute_n_times<8>([&](auto i) {
-            using namespace Vc::detail;
-            constexpr uint offset = 4u * i;
-            *reinterpret_cast<may_alias<uint> *>(mem + offset) =
-                _pdep_u32(v.v() >> offset, 0x01010101U);
-        });
-        unused(f);
+        x86::store32(lo256(_mm512_maskz_set1_epi8(v, 1)), mem, f);
 #endif
     }
     template <class F>
     static Vc_INTRINSIC void store(mask_member_type<64> v, bool *mem, F f,
                                    size_tag<64>) noexcept
     {
-#if defined Vc_HAVE_AVX512BW
-        store64(and_(one64(uchar()), _mm512_movm_epi8(v.v())), mem, f);
-#elif defined Vc_HAVE_AVX512DQ
-        store64(concat(concat(_mm512_cvtepi32_epi8(
-                                  _mm512_srli_epi32(_mm512_movm_epi32(v.v()), 31)),
-                              _mm512_cvtepi32_epi8(
-                                  _mm512_srli_epi32(_mm512_movm_epi32(v.v() >> 16), 31))),
-                       concat(_mm512_cvtepi32_epi8(
-                                  _mm512_srli_epi32(_mm512_movm_epi32(v.v() >> 32), 31)),
-                              _mm512_cvtepi32_epi8(
-                                  _mm512_srli_epi32(_mm512_movm_epi32(v.v() >> 48), 31)))),
-                mem, f);
-#elif defined Vc_IS_AMD64
-        *reinterpret_cast<may_alias<ullong> *>(mem) =
-            _pdep_u64(v.v(), 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 8) =
-            _pdep_u64(v.v() >> 8, 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 16) =
-            _pdep_u64(v.v() >> 16, 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 24) =
-            _pdep_u64(v.v() >> 24, 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 32) =
-            _pdep_u64(v.v() >> 32, 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 40) =
-            _pdep_u64(v.v() >> 40, 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 48) =
-            _pdep_u64(v.v() >> 48, 0x0101010101010101ULL);
-        *reinterpret_cast<may_alias<ullong> *>(mem + 56) =
-            _pdep_u64(v.v() >> 56, 0x0101010101010101ULL);
-        unused(f);
-#else
-        execute_n_times<16>([&](auto i) {
-            using namespace Vc::detail;
-            constexpr uint offset = 4u * i;
-            *reinterpret_cast<may_alias<uint> *>(mem + offset) =
-                _pdep_u32(v.v() >> offset, 0x01010101U);
-        });
-        unused(f);
-#endif
+        x86::store64(_mm512_maskz_set1_epi8(v, 1), mem, f);
     }
+#endif  // Vc_HAVE_AVX512BW
 
     // masked store {{{2
-#if defined Vc_HAVE_AVX512BW && defined Vc_HAVE_AVX512VL
     template <class F>
     static Vc_INTRINSIC void masked_store(mask_member_type<8> v, bool *mem, F,
                                           mask_member_type<8> k) noexcept
     {
-        _mm_mask_storeu_epi8(mem, k.v(), and_(one16(uchar()), _mm_movm_epi8(v.v())));
+#if defined Vc_HAVE_AVX512VL && defined Vc_HAVE_AVX512BW
+        _mm_mask_cvtepi16_storeu_epi8(mem, k, _mm_maskz_set1_epi16(v, 1));
+#elif defined Vc_HAVE_AVX512VL
+        _mm256_mask_cvtepi32_storeu_epi8(mem, k, _mm256_maskz_set1_epi32(v, 1));
+#else
+        // we rely on k < 0x100:
+        _mm512_mask_cvtepi32_storeu_epi8(mem, k, _mm512_maskz_set1_epi32(v, 1));
+#endif
     }
 
     template <class F>
     static Vc_INTRINSIC void masked_store(mask_member_type<16> v, bool *mem, F,
                                           mask_member_type<16> k) noexcept
     {
-        _mm_mask_storeu_epi8(mem, k.v(), and_(one16(uchar()), _mm_movm_epi8(v.v())));
+#if defined Vc_HAVE_AVX512VL && defined Vc_HAVE_AVX512BW
+        _mm_mask_storeu_epi8(mem, k, _mm_maskz_set1_epi8(v, 1));
+#else
+        _mm512_mask_cvtepi32_storeu_epi8(mem, k, _mm512_maskz_set1_epi32(v, 1));
+#endif
     }
 
+#ifdef Vc_HAVE_AVX512BW
     template <class F>
     static Vc_INTRINSIC void masked_store(mask_member_type<32> v, bool *mem, F,
                                           mask_member_type<32> k) noexcept
     {
-        _mm256_mask_storeu_epi8(mem, k.v(), and_(one32(uchar()), _mm256_movm_epi8(v.v())));
+#if defined Vc_HAVE_AVX512VL
+        _mm256_mask_storeu_epi8(mem, k, _mm256_maskz_set1_epi8(v, 1));
+#else
+        _mm256_mask_storeu_epi8(mem, k, lo256(_mm512_maskz_set1_epi8(v, 1)));
+#endif
     }
 
     template <class F>
     static Vc_INTRINSIC void masked_store(mask_member_type<64> v, bool *mem, F,
                                           mask_member_type<64> k) noexcept
     {
-        _mm512_mask_storeu_epi8(mem, k.v(), and_(one64(uchar()), _mm512_movm_epi8(v.v())));
+        _mm512_mask_storeu_epi8(mem, k, _mm512_maskz_set1_epi8(v, 1));
     }
-
-#else   // defined Vc_HAVE_AVX512BW && defined Vc_HAVE_AVX512VL
-    template <size_t N, class F>
-    static Vc_INTRINSIC void masked_store(mask_member_type<N> v, bool *mem, F,
-                                          mask_member_type<N> k) noexcept
-    {
-        detail::execute_n_times<N>([&](auto i) {
-            if (k[i]) {
-                mem[i] = v[i];
-            }
-        });
-    }
-#endif  // defined Vc_HAVE_AVX512BW && defined Vc_HAVE_AVX512VL
+#endif  // Vc_HAVE_AVX512BW
 
     // negation {{{2
     template <class T, class SizeTag>
     static Vc_INTRINSIC T negate(const T &x, SizeTag) noexcept
     {
-        return ~x.v();
+        return ~x.d;
     }
 
     // logical and bitwise operators {{{2
@@ -1239,7 +1057,7 @@ struct avx512_mask_impl
     template <size_t N>
     static Vc_INTRINSIC bool get(mask_member_type<N> k, int i) noexcept
     {
-        return k.m(i);
+        return k[i];
     }
     template <size_t N>
     static Vc_INTRINSIC void set(mask_member_type<N> &k, int i, bool x) noexcept

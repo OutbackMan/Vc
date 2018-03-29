@@ -36,141 +36,25 @@ namespace detail
 namespace x86
 {
 // plus{{{1
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
 template <class T, size_t N>
-Vc_INTRINSIC Storage<T, N> plus(Storage<T, N> a, Storage<T, N> b)
+constexpr Vc_INTRINSIC Storage<T, N> plus(Storage<T, N> a, Storage<T, N> b)
 {
-    return a.builtin() + b.builtin();
+    return a.d + b.d;
 }
-#else   // Vc_USE_BUILTIN_VECTOR_TYPES
-Vc_INTRINSIC __m128  Vc_VDECL plus(x_f32 a, x_f32 b) { return _mm_add_ps(a, b); }
-Vc_INTRINSIC __m128d Vc_VDECL plus(x_f64 a, x_f64 b) { return _mm_add_pd(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL plus(x_i64 a, x_i64 b) { return _mm_add_epi64(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL plus(x_u64 a, x_u64 b) { return _mm_add_epi64(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL plus(x_i32 a, x_i32 b) { return _mm_add_epi32(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL plus(x_u32 a, x_u32 b) { return _mm_add_epi32(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL plus(x_i16 a, x_i16 b) { return _mm_add_epi16(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL plus(x_u16 a, x_u16 b) { return _mm_add_epi16(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL plus(x_i08 a, x_i08 b) { return _mm_add_epi8 (a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL plus(x_u08 a, x_u08 b) { return _mm_add_epi8 (a, b); }
-
-#ifdef Vc_HAVE_AVX
-Vc_INTRINSIC __m256  Vc_VDECL plus(y_f32 a, y_f32 b) { return _mm256_add_ps(a, b); }
-Vc_INTRINSIC __m256d Vc_VDECL plus(y_f64 a, y_f64 b) { return _mm256_add_pd(a, b); }
-#endif  // Vc_HAVE_AVX
-#ifdef Vc_HAVE_AVX2
-Vc_INTRINSIC __m256i Vc_VDECL plus(y_i64 a, y_i64 b) { return _mm256_add_epi64(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL plus(y_u64 a, y_u64 b) { return _mm256_add_epi64(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL plus(y_i32 a, y_i32 b) { return _mm256_add_epi32(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL plus(y_u32 a, y_u32 b) { return _mm256_add_epi32(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL plus(y_i16 a, y_i16 b) { return _mm256_add_epi16(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL plus(y_u16 a, y_u16 b) { return _mm256_add_epi16(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL plus(y_i08 a, y_i08 b) { return _mm256_add_epi8 (a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL plus(y_u08 a, y_u08 b) { return _mm256_add_epi8 (a, b); }
-#endif  // Vc_HAVE_AVX2
-
-#ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC __m512  Vc_VDECL plus(z_f32 a, z_f32 b) { return _mm512_add_ps(a, b); }
-Vc_INTRINSIC __m512d Vc_VDECL plus(z_f64 a, z_f64 b) { return _mm512_add_pd(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL plus(z_i64 a, z_i64 b) { return _mm512_add_epi64(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL plus(z_u64 a, z_u64 b) { return _mm512_add_epi64(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL plus(z_i32 a, z_i32 b) { return _mm512_add_epi32(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL plus(z_u32 a, z_u32 b) { return _mm512_add_epi32(a, b); }
-#ifdef Vc_HAVE_AVX512BW
-Vc_INTRINSIC __m512i Vc_VDECL plus(z_i16 a, z_i16 b) { return _mm512_add_epi16(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL plus(z_u16 a, z_u16 b) { return _mm512_add_epi16(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL plus(z_i08 a, z_i08 b) { return _mm512_add_epi8(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL plus(z_u08 a, z_u08 b) { return _mm512_add_epi8(a, b); }
-#endif  // Vc_HAVE_AVX512BW
-#endif  // Vc_HAVE_AVX512F
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
 
 // minus{{{1
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-template <class T, size_t N> Vc_INTRINSIC Storage<T, N> minus(Storage<T, N> a, Storage<T, N> b)
+template <class T, size_t N>
+constexpr Vc_INTRINSIC Storage<T, N> minus(Storage<T, N> a, Storage<T, N> b)
 {
-    return a.builtin() - b.builtin();
+    return a.d - b.d;
 }
-#else   // Vc_USE_BUILTIN_VECTOR_TYPES
-Vc_INTRINSIC __m128  Vc_VDECL minus(x_f32 a, x_f32 b) { return _mm_sub_ps(a, b); }
-Vc_INTRINSIC __m128d Vc_VDECL minus(x_f64 a, x_f64 b) { return _mm_sub_pd(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL minus(x_i64 a, x_i64 b) { return _mm_sub_epi64(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL minus(x_u64 a, x_u64 b) { return _mm_sub_epi64(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL minus(x_i32 a, x_i32 b) { return _mm_sub_epi32(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL minus(x_u32 a, x_u32 b) { return _mm_sub_epi32(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL minus(x_i16 a, x_i16 b) { return _mm_sub_epi16(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL minus(x_u16 a, x_u16 b) { return _mm_sub_epi16(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL minus(x_i08 a, x_i08 b) { return _mm_sub_epi8 (a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL minus(x_u08 a, x_u08 b) { return _mm_sub_epi8 (a, b); }
-
-#ifdef Vc_HAVE_AVX
-Vc_INTRINSIC __m256  Vc_VDECL minus(y_f32 a, y_f32 b) { return _mm256_sub_ps(a, b); }
-Vc_INTRINSIC __m256d Vc_VDECL minus(y_f64 a, y_f64 b) { return _mm256_sub_pd(a, b); }
-#endif  // Vc_HAVE_AVX
-#ifdef Vc_HAVE_AVX2
-Vc_INTRINSIC __m256i Vc_VDECL minus(y_i64 a, y_i64 b) { return _mm256_sub_epi64(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL minus(y_u64 a, y_u64 b) { return _mm256_sub_epi64(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL minus(y_i32 a, y_i32 b) { return _mm256_sub_epi32(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL minus(y_u32 a, y_u32 b) { return _mm256_sub_epi32(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL minus(y_i16 a, y_i16 b) { return _mm256_sub_epi16(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL minus(y_u16 a, y_u16 b) { return _mm256_sub_epi16(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL minus(y_i08 a, y_i08 b) { return _mm256_sub_epi8 (a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL minus(y_u08 a, y_u08 b) { return _mm256_sub_epi8 (a, b); }
-#endif  // Vc_HAVE_AVX2
-
-#ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC __m512  Vc_VDECL minus(z_f32 a, z_f32 b) { return _mm512_sub_ps(a, b); }
-Vc_INTRINSIC __m512d Vc_VDECL minus(z_f64 a, z_f64 b) { return _mm512_sub_pd(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL minus(z_i64 a, z_i64 b) { return _mm512_sub_epi64(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL minus(z_u64 a, z_u64 b) { return _mm512_sub_epi64(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL minus(z_i32 a, z_i32 b) { return _mm512_sub_epi32(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL minus(z_u32 a, z_u32 b) { return _mm512_sub_epi32(a, b); }
-#ifdef Vc_HAVE_AVX512BW
-Vc_INTRINSIC __m512i Vc_VDECL minus(z_i16 a, z_i16 b) { return _mm512_sub_epi16(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL minus(z_u16 a, z_u16 b) { return _mm512_sub_epi16(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL minus(z_i08 a, z_i08 b) { return _mm512_sub_epi8(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL minus(z_u08 a, z_u08 b) { return _mm512_sub_epi8(a, b); }
-#endif  // Vc_HAVE_AVX512BW
-#endif  // Vc_HAVE_AVX512F
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
 
 // multiplies{{{1
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-template <class T, size_t N> Vc_INTRINSIC Storage<T, N> Vc_VDECL multiplies(Storage<T, N> a, Storage<T, N> b)
+template <class T, size_t N>
+constexpr Vc_INTRINSIC Storage<T, N> Vc_VDECL multiplies(Storage<T, N> a, Storage<T, N> b)
 {
-    return a.builtin() * b.builtin();
+    return a.d * b.d;
 }
-#else   // Vc_USE_BUILTIN_VECTOR_TYPES
-Vc_INTRINSIC __m128  Vc_VDECL multiplies(x_f32 a, x_f32 b) { return _mm_mul_ps(a, b); }
-Vc_INTRINSIC __m128d Vc_VDECL multiplies(x_f64 a, x_f64 b) { return _mm_mul_pd(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_i64 a, x_i64 b) {
-#if defined Vc_HAVE_AVX512VL && defined Vc_HAVE_AVX512DQ
-    return _mm_mullo_epi64(a, b);
-#else
-    return x_i64{a[0] * b[0], a[1] * b[1]};
-#endif
-}
-Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_u64 a, x_u64 b) {
-#if defined Vc_HAVE_AVX512VL && defined Vc_HAVE_AVX512DQ
-    return _mm_mullo_epi64(a, b);
-#else
-    return x_u64{a[0] * b[0], a[1] * b[1]};
-#endif
-}
-Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_i32 a, x_i32 b) {
-#ifdef Vc_HAVE_SSE4_1
-    return _mm_mullo_epi32(a, b);
-#else
-    const __m128i aShift = _mm_srli_si128(a, 4);
-    const __m128i ab02 = _mm_mul_epu32(a, b);  // [a0 * b0, a2 * b2]
-    const __m128i bShift = _mm_srli_si128(b, 4);
-    const __m128i ab13 = _mm_mul_epu32(aShift, bShift);  // [a1 * b1, a3 * b3]
-    return _mm_unpacklo_epi32(_mm_shuffle_epi32(ab02, 8), _mm_shuffle_epi32(ab13, 8));
-#endif
-}
-Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_u32 a, x_u32 b) { return multiplies(x_i32(a), x_i32(b)); }
-Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_i16 a, x_i16 b) { return _mm_mullo_epi16(a, b); }
-Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_u16 a, x_u16 b) { return _mm_mullo_epi16(a, b); }
 Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_i08 a, x_i08 b) {
     return or_(
         and_(_mm_mullo_epi16(a, b), srli_epi16<8>(allone<__m128i>())),
@@ -178,22 +62,7 @@ Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_i08 a, x_i08 b) {
 }
 Vc_INTRINSIC __m128i Vc_VDECL multiplies(x_u08 a, x_u08 b) { return multiplies(x_i08(a), x_i08(b)); }
 
-#ifdef Vc_HAVE_AVX
-Vc_INTRINSIC __m256  Vc_VDECL multiplies(y_f32 a, y_f32 b) { return _mm256_mul_ps(a, b); }
-Vc_INTRINSIC __m256d Vc_VDECL multiplies(y_f64 a, y_f64 b) { return _mm256_mul_pd(a, b); }
-#endif  // Vc_HAVE_AVX
 #ifdef Vc_HAVE_AVX2
-#if defined Vc_HAVE_AVX512DQ && defined Vc_HAVE_AVX512VL
-Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_i64 a, y_i64 b) { return _mm256_mullo_epi64(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_u64 a, y_u64 b) { return _mm256_mullo_epi64(a, b); }
-#else
-Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_i64 a, y_i64 b) { return y_i64{a[0] * b[0], a[1] * b[1], a[2] * b[2], a[3] * b[3]}; }
-Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_u64 a, y_u64 b) { return y_u64{a[0] * b[0], a[1] * b[1], a[2] * b[2], a[3] * b[3]}; }
-#endif
-Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_i32 a, y_i32 b) { return _mm256_mullo_epi32(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_u32 a, y_u32 b) { return _mm256_mullo_epi32(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_i16 a, y_i16 b) { return _mm256_mullo_epi16(a, b); }
-Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_u16 a, y_u16 b) { return _mm256_mullo_epi16(a, b); }
 Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_i08 a, y_i08 b) {
     return or_(and_(_mm256_mullo_epi16(a, b), srli_epi16<8>(allone<__m256i>())),
                slli_epi16<8>(
@@ -203,8 +72,6 @@ Vc_INTRINSIC __m256i Vc_VDECL multiplies(y_u08 a, y_u08 b) { return multiplies(y
 #endif  // Vc_HAVE_AVX2
 
 #ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC __m512  Vc_VDECL multiplies(z_f32 a, z_f32 b) { return _mm512_mul_ps(a, b); }
-Vc_INTRINSIC __m512d Vc_VDECL multiplies(z_f64 a, z_f64 b) { return _mm512_mul_pd(a, b); }
 Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_i64 a, z_i64 b) {
 #ifdef Vc_HAVE_AVX512DQ
     return _mm512_mullo_epi64(a, b);
@@ -218,11 +85,7 @@ Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_i64 a, z_i64 b) {
 #endif  // Vc_HAVE_AVX512DQ
 }
 Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_u64 a, z_u64 b) { return multiplies(z_i64(a),z_i64(b)); }
-Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_i32 a, z_i32 b) { return _mm512_mullo_epi32(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_u32 a, z_u32 b) { return _mm512_mullo_epi32(a, b); }
 #ifdef Vc_HAVE_AVX512BW
-Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_i16 a, z_i16 b) { return _mm512_mullo_epi16(a, b); }
-Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_u16 a, z_u16 b) { return _mm512_mullo_epi16(a, b); }
 Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_i08 a, z_i08 b) {
     return or_(
         and_(_mm512_mullo_epi16(a, b), _mm512_srli_epi16(allone<__m512i>(), 8)),
@@ -231,31 +94,23 @@ Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_i08 a, z_i08 b) {
 Vc_INTRINSIC __m512i Vc_VDECL multiplies(z_u08 a, z_u08 b) { return multiplies(z_i08(a), z_i08(b)); }
 #endif  // Vc_HAVE_AVX512BW
 #endif  // Vc_HAVE_AVX512F
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
 
 // divides{{{1
 #ifdef Vc_USE_BUILTIN_VECTOR_TYPES
 // builtin{{{2
-template <class T, size_t N> Vc_INTRINSIC Storage<T, N> divides(Storage<T, N> a, Storage<T, N> b)
+template <class T, size_t N>
+constexpr Vc_INTRINSIC Storage<T, N> divides(Storage<T, N> a, Storage<T, N> b)
 {
-    return a.builtin() / b.builtin();
+    return a.d / b.d;
 }
 #else   // Vc_USE_BUILTIN_VECTOR_TYPES
 // sse{{{2
-Vc_INTRINSIC x_f32 Vc_VDECL divides(x_f32 a, x_f32 b) { return _mm_div_ps(a, b); }
-
-Vc_INTRINSIC x_f64 Vc_VDECL divides(x_f64 a, x_f64 b) { return _mm_div_pd(a, b); }
-
-Vc_INTRINSIC x_i64 Vc_VDECL divides(x_i64 a, x_i64 b) { return {a[0] / b[0], a[1] / b[1]}; }
-
-Vc_INTRINSIC x_u64 Vc_VDECL divides(x_u64 a, x_u64 b) { return {a[0] / b[0], a[1] / b[1]}; }
-
 Vc_INTRINSIC x_i32 Vc_VDECL divides(x_i32 a, x_i32 b) {
 #ifdef Vc_HAVE_AVX
     return _mm256_cvttpd_epi32(
         _mm256_div_pd(_mm256_cvtepi32_pd(a), _mm256_cvtepi32_pd(b)));
 #else
-    return {a[0] / b[0], a[1] / b[1], a[2] / b[2], a[3] / b[3]};
+    return a.d / b.d;
 #endif
 }
 
@@ -264,7 +119,7 @@ Vc_INTRINSIC x_u32 Vc_VDECL divides(x_u32 a, x_u32 b) {
     return _mm256_cvttpd_epu32(
         _mm256_div_pd(_mm256_cvtepu32_pd(a), _mm256_cvtepu32_pd(b)));
 #else
-    return {a[0] / b[0], a[1] / b[1], a[2] / b[2], a[3] / b[3]};
+    return a.d / b.d;
 #endif
 }
 
@@ -351,13 +206,7 @@ inline x_u08 Vc_VDECL divides(x_u08 a, x_u08 b) {
 }
 
 // avx{{{2
-#ifdef Vc_HAVE_AVX
-Vc_INTRINSIC y_f32 Vc_VDECL divides(y_f32 a, y_f32 b) { return _mm256_div_ps(a, b); }
-Vc_INTRINSIC y_f64 Vc_VDECL divides(y_f64 a, y_f64 b) { return _mm256_div_pd(a, b); }
-#endif// Vc_HAVE_AVX
 #ifdef Vc_HAVE_AVX2
-Vc_INTRINSIC y_i64 Vc_VDECL divides(y_i64 a, y_i64 b) { return {a[0] / b[0], a[1] / b[1], a[2] / b[2], a[3] / b[3]}; }
-Vc_INTRINSIC y_u64 Vc_VDECL divides(y_u64 a, y_u64 b) { return {a[0] / b[0], a[1] / b[1], a[2] / b[2], a[3] / b[3]}; }
 Vc_INTRINSIC y_i32 Vc_VDECL divides(y_i32 a, y_i32 b) {
 #ifdef Vc_HAVE_AVX512F
     return _mm512_cvttpd_epi32(
@@ -436,16 +285,6 @@ Vc_INTRINSIC y_u08 Vc_VDECL divides(y_u08 a, y_u08 b) {
 
 // avx512{{{2
 #ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC z_f32 Vc_VDECL divides(z_f32 a, z_f32 b) { return _mm512_div_ps(a, b); }
-Vc_INTRINSIC z_f64 Vc_VDECL divides(z_f64 a, z_f64 b) { return _mm512_div_pd(a, b); }
-Vc_INTRINSIC z_i64 Vc_VDECL divides(z_i64 a, z_i64 b) {
-    return {a[0] / b[0], a[1] / b[1], a[2] / b[2], a[3] / b[3],
-            a[4] / b[4], a[5] / b[5], a[6] / b[6], a[7] / b[7]};
-}
-Vc_INTRINSIC z_u64 Vc_VDECL divides(z_u64 a, z_u64 b) {
-    return {a[0] / b[0], a[1] / b[1], a[2] / b[2], a[3] / b[3],
-            a[4] / b[4], a[5] / b[5], a[6] / b[6], a[7] / b[7]};
-}
 Vc_INTRINSIC z_i32 Vc_VDECL divides(z_i32 a, z_i32 b) {
     return concat(_mm512_cvttpd_epi32(_mm512_div_pd(_mm512_cvtepi32_pd(lo256(a)),
                                                     _mm512_cvtepi32_pd(lo256(b)))),
@@ -492,19 +331,12 @@ Vc_INTRINSIC z_u08 Vc_VDECL divides(z_u08 a, z_u08 b) {
 #endif  // Vc_USE_BUILTIN_VECTOR_TYPES
 
 // modulus{{{1
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-template <class T, size_t N> Vc_INTRINSIC Storage<T, N> modulus(Storage<T, N> a, Storage<T, N> b)
+template <class T, size_t N>
+constexpr Vc_INTRINSIC Storage<T, N> modulus(Storage<T, N> a, Storage<T, N> b)
 {
     static_assert(std::is_integral<T>::value, "modulus is only supported for integral types");
-    return a.builtin() % b.builtin();
+    return a.d % b.d;
 }
-#else   // Vc_USE_BUILTIN_VECTOR_TYPES
-template <class T, size_t N> Vc_INTRINSIC Storage<T, N> modulus(Storage<T, N> a, Storage<T, N> b)
-{
-    static_assert(std::is_integral<T>::value, "modulus is only supported for integral types");
-    return minus(a, multiplies(divides(a, b), b));
-}
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
 
 // bit_and{{{1
 template <size_t N>
@@ -518,15 +350,11 @@ Vc_INTRINSIC Storage<double, N> bit_and(Storage<double, N> a, Storage<double, N>
     return and_(a, b);
 }
 template <class T, size_t N>
-Vc_INTRINSIC Storage<T, N> bit_and(Storage<T, N> a, Storage<T, N> b)
+constexpr Vc_INTRINSIC Storage<T, N> bit_and(Storage<T, N> a, Storage<T, N> b)
 {
     static_assert(std::is_integral<T>::value,
                   "bit_and is only supported for integral types");
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-    return a.builtin() & b.builtin();
-#else   // Vc_USE_BUILTIN_VECTOR_TYPES
-    return and_(a, b);
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
+    return a.d & b.d;
 }
 
 // bit_or{{{1
@@ -540,15 +368,12 @@ Vc_INTRINSIC Storage<double, N> bit_or(Storage<double, N> a, Storage<double, N> 
 {
     return or_(a, b);
 }
-template <class T, size_t N> Vc_INTRINSIC Storage<T, N> bit_or(Storage<T, N> a, Storage<T, N> b)
+template <class T, size_t N>
+constexpr Vc_INTRINSIC Storage<T, N> bit_or(Storage<T, N> a, Storage<T, N> b)
 {
     static_assert(std::is_integral<T>::value,
                   "bit_or is only supported for integral types");
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-    return a.builtin() | b.builtin();
-#else   // Vc_USE_BUILTIN_VECTOR_TYPES
-    return or_(a, b);
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
+    return a.d | b.d;
 }
 
 // bit_xor{{{1
@@ -562,178 +387,112 @@ Vc_INTRINSIC Storage<double, N> bit_xor(Storage<double, N> a, Storage<double, N>
 {
     return xor_(a, b);
 }
-template <class T, size_t N> Vc_INTRINSIC Storage<T, N> bit_xor(Storage<T, N> a, Storage<T, N> b)
+template <class T, size_t N>
+constexpr Vc_INTRINSIC Storage<T, N> bit_xor(Storage<T, N> a, Storage<T, N> b)
 {
     static_assert(std::is_integral<T>::value,
                   "bit_xor is only supported for integral types");
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-    return a.builtin() ^ b.builtin();
-#else   // Vc_USE_BUILTIN_VECTOR_TYPES
-    return xor_(a, b);
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
+    return a.d ^ b.d;
 }
 
 // bit_shift_left{{{1
-#ifdef __GNUC__
+template <class T, size_t N>
+Vc_INTRINSIC Storage<T, N> constexpr bit_shift_left(Storage<T, N> a, Storage<T, N> b)
+{
+    static_assert(std::is_integral<T>::value,
+                  "bit_shift_left is only supported for integral types");
+    return a.d << b.d;
+}
+template <class T, size_t N>
+Vc_INTRINSIC Storage<T, N> constexpr bit_shift_left(Storage<T, N> a, int b)
+{
+    static_assert(std::is_integral<T>::value, "bit_shift_left is only supported for integral types");
+    return a.d << b;
+}
+
+#ifdef Vc_GCC
+// GCC needs help to optimize better{{{
+// (cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83894)
 #define Vc_SHIFT_LEFT_CONSTEXPR_8(v_, n_)                                                \
     if (__builtin_constant_p(n_)) {                                                      \
         if (n_ == 0) {                                                                   \
             return v_;                                                                   \
         } else if (n_ == 1) {                                                            \
-            return plus(v_, v_);                                                         \
+            return v_.d + v_.d;                                                          \
         } else if (n_ > 1 && n_ < 8) {                                                   \
             const uchar mask = (0xff << n_) & 0xff;                                      \
-            return and_(bit_shift_left(Storage<ushort, v_.size() / 2>(v_.v()), n_),      \
-                        broadcast(mask));                                                \
+            using V = decltype(v_);                                                      \
+            return x86::to_intrin(storage_bitcast<ushort>(v_).d << n_) &                 \
+                   V::broadcast(mask).intrin();                                          \
         } else {                                                                         \
             return detail::warn_ub(v_);                                                  \
         }                                                                                \
     }                                                                                    \
     Vc_NOTHING_EXPECTING_SEMICOLON
+
+Vc_INTRINSIC x_u08 bit_shift_left(x_u08 a, int b)
+{
+    Vc_SHIFT_LEFT_CONSTEXPR_8(a, b);
+#if defined Vc_HAVE_AVX512BW && defined Vc_HAVE_AVX512VL
+    return _mm256_cvtepi16_epi8(reinterpret_cast<__m256i>(
+        reinterpret_cast<builtin_type_t<ushort, 16>>(_mm256_cvtepi8_epi16(a)) << b));
 #else
-#define Vc_SHIFT_LEFT_CONSTEXPR_8(v_, n_) Vc_NOTHING_EXPECTING_SEMICOLON
+    using vshort = builtin_type_t<ushort, 8>;
+    const auto mask = ((~vshort() >> 8) << b) ^ (~vshort() << 8);
+    return x86::to_intrin((reinterpret_cast<vshort>(a.d) << b) & mask);
 #endif
-
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-template <class T, size_t N>
-Vc_INTRINSIC Storage<T, N> bit_shift_left(Storage<T, N> a, Storage<T, N> b)
-{
-    static_assert(std::is_integral<T>::value,
-                  "bit_shift_left is only supported for integral types");
-    return a.builtin() << b.builtin();
 }
-template <class T, size_t N>
-Vc_INTRINSIC Storage<T, N> bit_shift_left(Storage<T, N> a, int b)
+Vc_INTRINSIC x_i08 bit_shift_left(x_i08 a, int b)
 {
-    static_assert(std::is_integral<T>::value, "bit_shift_left is only supported for integral types");
-    return a.builtin() << detail::data(simd<T, abi_for_size_t<T, N>>(b)).builtin();
+    return storage_bitcast<schar>(bit_shift_left(storage_bitcast<uchar>(a), b));
 }
-
-#ifdef Vc_GCC
-// GCC needs help to optimize better (cf.
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83894)
-Vc_INTRINSIC Storage<uchar, 16> bit_shift_left(Storage<uchar, 16> a, int b)
+Vc_INTRINSIC x_chr bit_shift_left(x_chr a, int b)
 {
-    Vc_SHIFT_LEFT_CONSTEXPR_8(a, b);
-    const auto mask = xor_(_mm_sll_epi16(_mm_set1_epi16(0xff), _mm_cvtsi32_si128(b)),
-                           _mm_set1_epi16(ushort(0xff00u)));
-    return and_(_mm_sll_epi16(a, _mm_cvtsi32_si128(b)), mask);
-}
-Vc_INTRINSIC Storage<schar, 16> bit_shift_left(Storage<schar, 16> a, int b)
-{
-    Vc_SHIFT_LEFT_CONSTEXPR_8(a, b);
-    const auto mask = xor_(_mm_sll_epi16(_mm_set1_epi16(0xff), _mm_cvtsi32_si128(b)),
-                           _mm_set1_epi16(ushort(0xff00u)));
-    return and_(_mm_sll_epi16(a, _mm_cvtsi32_si128(b)), mask);
+    return storage_bitcast<char>(bit_shift_left(storage_bitcast<uchar>(a), b));
 }
 
 #ifdef Vc_HAVE_AVX2
 Vc_INTRINSIC Storage<uchar, 32> bit_shift_left(Storage<uchar, 32> a, int b)
 {
     Vc_SHIFT_LEFT_CONSTEXPR_8(a, b);
-    const auto mask = xor_(_mm256_sll_epi16(_mm256_set1_epi16(0xff), _mm_cvtsi32_si128(b)),
-                           _mm256_set1_epi16(ushort(0xff00u)));
-    return and_(_mm256_sll_epi16(a, _mm_cvtsi32_si128(b)), mask);
+#if defined Vc_HAVE_AVX512BW
+    return _mm512_cvtepi16_epi8(reinterpret_cast<__m512i>(
+        reinterpret_cast<builtin_type_t<ushort, 32>>(_mm512_cvtepi8_epi16(a)) << b));
+#else
+    using vshort = builtin_type_t<ushort, 16>;
+    const auto mask = ((~vshort() >> 8) << b) ^ (~vshort() << 8);
+    return x86::to_intrin((reinterpret_cast<vshort>(a.d) << b) & mask);
+#endif
 }
 Vc_INTRINSIC Storage<schar, 32> bit_shift_left(Storage<schar, 32> a, int b)
 {
-    Vc_SHIFT_LEFT_CONSTEXPR_8(a, b);
-    const auto mask = xor_(_mm256_sll_epi16(_mm256_set1_epi16(0xff), _mm_cvtsi32_si128(b)),
-                           _mm256_set1_epi16(ushort(0xff00u)));
-    return and_(_mm256_sll_epi16(a, _mm_cvtsi32_si128(b)), mask);
+    return storage_bitcast<schar>(bit_shift_left(storage_bitcast<uchar>(a), b));
+}
+Vc_INTRINSIC Storage< char, 32> bit_shift_left(Storage< char, 32> a, int b)
+{
+    return storage_bitcast<char>(bit_shift_left(storage_bitcast<uchar>(a), b));
 }
 #endif  // Vc_HAVE_AVX2
-#endif  // Vc_GCC
-#else   // Vc_USE_BUILTIN_VECTOR_TYPES
 
-// generic scalar fallback
-template <class T, size_t N>
-Vc_INTRINSIC Storage<T, N> bit_shift_left(Storage<T, N> a, Storage<T, N> b)
-{
-    static_assert(std::is_integral<T>::value, "bit_shift_left is only supported for integral types");
-    return generate_from_n_evaluations<N, Storage<T, N>>(
-        [&](auto i) { return a[i] << b[i]; });
-}
-template <class T, size_t N>
-Vc_INTRINSIC Storage<T, N> bit_shift_left(Storage<T, N> a, int b)
-{
-    static_assert(std::is_integral<T>::value, "bit_shift_left is only supported for integral types");
-    return generate_from_n_evaluations<N, Storage<T, N>>(
-        [&](auto i) { return a[i] << b; });
-}
-
-#ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC x_u08 bit_shift_left(x_u08 a, int b)
+#ifdef Vc_HAVE_AVX512BW
+Vc_INTRINSIC z_u08 bit_shift_left(z_u08 a, int b)
 {
     Vc_SHIFT_LEFT_CONSTEXPR_8(a, b);
-    const uchar mask = (0xff << b) & 0xff;
-    return and_(_mm_sll_epi16(a, _mm_cvtsi32_si128(b)), broadcast16(mask));
+    using vshort = builtin_type_t<ushort, 32>;
+    const auto mask = ((~vshort() >> 8) << b) ^ (~vshort() << 8);
+    return x86::to_intrin((reinterpret_cast<vshort>(a.d) << b) & mask);
 }
+Vc_INTRINSIC Storage<schar, 64> bit_shift_left(Storage<schar, 64> a, int b)
+{
+    return storage_bitcast<schar>(bit_shift_left(storage_bitcast<uchar>(a), b));
+}
+Vc_INTRINSIC Storage< char, 64> bit_shift_left(Storage< char, 64> a, int b)
+{
+    return storage_bitcast<char>(bit_shift_left(storage_bitcast<uchar>(a), b));
+}
+#endif  // Vc_HAVE_AVX512BW
 
-Vc_INTRINSIC x_i08 bit_shift_left(x_i08 a, int b)
-{
-    return x_i08(bit_shift_left(x_u08(a), b));
-}
-
-Vc_INTRINSIC x_u16 bit_shift_left(x_u16 a, int b)
-{
-#ifdef __GNUC__
-    if (__builtin_constant_p(b)) {
-        return _mm_slli_epi16(a, b);
-    }
-#endif  //__GNUC__
-    return _mm_sll_epi16(a, _mm_cvtsi32_si128(b));
-}
-
-Vc_INTRINSIC x_i16 bit_shift_left(x_i16 a, int b)
-{
-#ifdef __GNUC__
-    if (__builtin_constant_p(b)) {
-        return _mm_slli_epi16(a, b);
-    }
-#endif  //__GNUC__
-    return _mm_sll_epi16(a, _mm_cvtsi32_si128(b));
-}
-
-Vc_INTRINSIC x_u32 bit_shift_left(x_u32 a, int b)
-{
-#ifdef __GNUC__
-    if (__builtin_constant_p(b)) {
-        return _mm_slli_epi32(a, b);
-    }
-#endif  //__GNUC__
-    return _mm_sll_epi32(a, _mm_cvtsi32_si128(b));
-}
-
-Vc_INTRINSIC x_i32 bit_shift_left(x_i32 a, int b)
-{
-#ifdef __GNUC__
-    if (__builtin_constant_p(b)) {
-        return _mm_slli_epi32(a, b);
-    }
-#endif  //__GNUC__
-    return _mm_sll_epi32(a, _mm_cvtsi32_si128(b));
-}
-
-Vc_INTRINSIC x_u64 bit_shift_left(x_u64 a, int b)
-{
-#ifdef __GNUC__
-    if (__builtin_constant_p(b)) {
-        return _mm_slli_epi64(a, b);
-    }
-#endif  //__GNUC__
-    return _mm_sll_epi64(a, _mm_cvtsi32_si128(b));
-}
-Vc_INTRINSIC x_i64 bit_shift_left(x_i64 a, int b)
-{
-#ifdef __GNUC__
-    if (__builtin_constant_p(b)) {
-        return _mm_slli_epi64(a, b);
-    }
-#endif  //__GNUC__
-    return _mm_sll_epi64(a, _mm_cvtsi32_si128(b));
-}
-#endif  // Vc_HAVE_SSE2
+#undef Vc_SHIFT_LEFT_CONSTEXPR_8
 
 // improvements/specializations with newer instruction set extensions
 #ifdef Vc_HAVE_AVX2
@@ -884,42 +643,26 @@ Vc_INTRINSIC z_u08 bit_shift_left(z_u08 a, z_u08 b) { return z_u08(bit_shift_lef
 */
 #endif  // Vc_HAVE_AVX512BW
 #endif  // Vc_HAVE_AVX2
-#endif  // Vc_USE_BUILTIN_VECTOR_TYPES
-
-#undef Vc_SHIFT_LEFT_CONSTEXPR_8
+//}}}
+#endif  // Vc_GCC
 
 // bit_shift_right{{{1
 #ifdef Vc_USE_BUILTIN_VECTOR_TYPES
 template <class T, size_t N>
 Vc_INTRINSIC Storage<T, N> bit_shift_right(Storage<T, N> a, Storage<T, N> b)
 {
-    static_assert(std::is_integral<T>::value, "bit_shift_right is only supported for integral types");
-    return a.builtin() >> b.builtin();
+    static_assert(std::is_integral<T>::value,
+                  "bit_shift_right is only supported for integral types");
+    return a.d >> b.d;
 }
 template <class T, size_t N>
 Vc_INTRINSIC Storage<T, N> bit_shift_right(Storage<T, N> a, int b)
 {
-    static_assert(std::is_integral<T>::value, "bit_shift_right is only supported for integral types");
-    return a.builtin() >> detail::data(simd<T, abi_for_size_t<T, N>>(b)).builtin();
+    static_assert(std::is_integral<T>::value,
+                  "bit_shift_right is only supported for integral types");
+    return a.d >> b;
 }
 #else   // Vc_USE_BUILTIN_VECTOR_TYPES
-
-// generic scalar fallback
-template <class T, size_t N>
-Vc_INTRINSIC Storage<T, N> bit_shift_right(Storage<T, N> a, Storage<T, N> b)
-{
-    static_assert(std::is_integral<T>::value, "bit_shift_right is only supported for integral types");
-    return generate_from_n_evaluations<N, Storage<T, N>>(
-        [&](auto i) { return a[i] >> b[i]; });
-}
-
-template <class T, size_t N>
-Vc_INTRINSIC Storage<T, N> bit_shift_right(Storage<T, N> a, int b)
-{
-    static_assert(std::is_integral<T>::value, "bit_shift_right is only supported for integral types");
-    return generate_from_n_evaluations<N, Storage<T, N>>(
-        [&](auto i) { return a[i] >> b; });
-}
 
 // improvements/specializations with newer instruction set extensions
 #ifdef Vc_HAVE_AVX2
@@ -1260,170 +1003,83 @@ Vc_INTRINSIC x_u08 bit_shift_right(x_u08 a, x_u08 b)
 #endif  // Vc_USE_BUILTIN_VECTOR_TYPES
 
 // complement{{{1
-template <typename T> Vc_INTRINSIC T Vc_VDECL complement(T v) {
-#ifdef Vc_USE_BUILTIN_VECTOR_TYPES
-    return ~v.builtin();
-#else
-    return not_(v);
-#endif
+template <class T, size_t N>
+constexpr Vc_INTRINSIC Storage<T, N> complement(Storage<T, N> v)
+{
+    return ~v.d;
 }
 
 //}}}1
 // unary_minus{{{1
-template <typename T> Vc_INTRINSIC T Vc_VDECL unary_minus(T v) { return minus(T{}, v); }
-Vc_INTRINSIC __m128  Vc_VDECL unary_minus(x_f32 v) { return xor_(v, signmask16(float())); }
-#ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC __m128d Vc_VDECL unary_minus(x_f64 v) { return xor_(v, signmask16(double())); }
-#endif  // Vc_HAVE_SSE2
-#ifdef Vc_HAVE_SSSE3
-Vc_INTRINSIC __m128i Vc_VDECL unary_minus(x_i32 v) { return _mm_sign_epi32(v, allone<__m128i>()); }
-Vc_INTRINSIC __m128i Vc_VDECL unary_minus(x_u32 v) { return _mm_sign_epi32(v, allone<__m128i>()); }
-Vc_INTRINSIC __m128i Vc_VDECL unary_minus(x_i16 v) { return _mm_sign_epi16(v, allone<__m128i>()); }
-Vc_INTRINSIC __m128i Vc_VDECL unary_minus(x_u16 v) { return _mm_sign_epi16(v, allone<__m128i>()); }
-Vc_INTRINSIC __m128i Vc_VDECL unary_minus(x_i08 v) { return _mm_sign_epi8 (v, allone<__m128i>()); }
-Vc_INTRINSIC __m128i Vc_VDECL unary_minus(x_u08 v) { return _mm_sign_epi8 (v, allone<__m128i>()); }
-#endif  // Vc_HAVE_SSSE3
-
-#ifdef Vc_HAVE_AVX
-Vc_INTRINSIC __m256  Vc_VDECL unary_minus(y_f32 v) { return xor_(v, signmask32(float())); }
-Vc_INTRINSIC __m256d Vc_VDECL unary_minus(y_f64 v) { return xor_(v, signmask32(double())); }
-#endif  // Vc_HAVE_AVX
-#ifdef Vc_HAVE_AVX2
-Vc_INTRINSIC __m256i Vc_VDECL unary_minus(y_i32 v) { return _mm256_sign_epi32(v, allone<__m256i>()); }
-Vc_INTRINSIC __m256i Vc_VDECL unary_minus(y_u32 v) { return _mm256_sign_epi32(v, allone<__m256i>()); }
-Vc_INTRINSIC __m256i Vc_VDECL unary_minus(y_i16 v) { return _mm256_sign_epi16(v, allone<__m256i>()); }
-Vc_INTRINSIC __m256i Vc_VDECL unary_minus(y_u16 v) { return _mm256_sign_epi16(v, allone<__m256i>()); }
-Vc_INTRINSIC __m256i Vc_VDECL unary_minus(y_i08 v) { return _mm256_sign_epi8 (v, allone<__m256i>()); }
-Vc_INTRINSIC __m256i Vc_VDECL unary_minus(y_u08 v) { return _mm256_sign_epi8 (v, allone<__m256i>()); }
-#endif  // Vc_HAVE_AVX2
-
-#ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC __m512  Vc_VDECL unary_minus(z_f32 v) { return xor_(v, signmask64(float())); }
-Vc_INTRINSIC __m512d Vc_VDECL unary_minus(z_f64 v) { return xor_(v, signmask64(double())); }
-#endif  // Vc_HAVE_AVX512F
+// GCC doesn't use the psign instructions, but pxor & psub seem to be just as good a
+// choice as pcmpeqd & psign. So meh.
+template <class T, size_t N>
+constexpr Vc_INTRINSIC Storage<T, N> unary_minus(Storage<T, N> v)
+{
+    return -v.d;
+}
 
 // abs{{{1
-#ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC Vc_CONST __m128i abs(x_i08 a)
+template <class T, size_t N>
+Vc_NORMAL_MATH constexpr Vc_INTRINSIC Storage<T, N> abs(Storage<T, N> v)
 {
-#ifdef Vc_HAVE_SSSE3
-    return _mm_abs_epi8(a);
-#else
-    __m128i negative = _mm_cmplt_epi8(a, _mm_setzero_si128());
-    return _mm_add_epi8(_mm_xor_si128(a, negative),
-                        _mm_and_si128(negative, setone_epi8()));
-#endif
+    return v.d < 0 ? -v.d : v.d;
 }
 
-Vc_INTRINSIC Vc_CONST __m128i abs(x_i16 a)
+#if defined Vc_HAVE_SSE2 && !defined Vc_HAVE_AVX512VL
+Vc_INTRINSIC Vc_CONST x_i64 abs(x_i64 a)
 {
-#ifdef Vc_HAVE_SSSE3
-    return _mm_abs_epi16(a);
-#else
-    __m128i negative = _mm_cmplt_epi16(a, _mm_setzero_si128());
-    return _mm_add_epi16(_mm_xor_si128(a, negative), srli_epi16<15>(negative));
-#endif
-}
-
-Vc_INTRINSIC Vc_CONST __m128i abs(x_i32 a)
-{
-#ifdef Vc_HAVE_SSSE3
-    return _mm_abs_epi32(a);
-#else
     // positive value:
     //   negative == 0
     //   a unchanged after xor
-    //   0 >> 31 -> 0
-    //   a + 0 -> a
+    //   a - 0 -> a
     // negative value:
-    //   negative == -1
-    //   a xor -1 -> -a - 1
-    //   -1 >> 31 -> 1
-    //   -a - 1 + 1 -> -a
-    __m128i negative = _mm_cmplt_epi32(a, _mm_setzero_si128());
-    return _mm_add_epi32(_mm_xor_si128(a, negative), _mm_srli_epi32(negative, 31));
-#endif
-}
-
-Vc_INTRINSIC Vc_CONST __m128i abs(x_i64 a)
-{
-#ifdef Vc_HAVE_AVX512VL
-    return _mm_abs_epi64(a);
-#else
-    // positive value:
-    //   negative == 0
-    //   a unchanged after xor
-    //   0 >> 31 -> 0
-    //   a + 0 -> a
-    // negative value:
-    //   negative == -1
-    //   a xor -1 -> -a - 1
-    //   -1 >> 31 -> 1
-    //   -a - 1 + 1 -> -a
+    //   negative == ~0 == -1
+    //   a xor ~0    -> -a - 1
+    //   -a - 1 - -1 -> -a
 #if defined Vc_HAVE_SSE4_2
-    __m128i negative = _mm_cmpgt_epi64(_mm_setzero_si128(), a);
+    __m128i negative = a.d < 0;
 #else
-    __m128i negative =
-        _mm_sub_epi64(xor_(_mm_srli_epi64(a, 63),  // negative -> 1, positive -> 0
-                           _mm_set1_epi64x(1)),    // negative -> 0, positive -> 1
-                      _mm_set1_epi64x(1));         // negative -> ~0, positive -> 0
+    // >>63: negative ->  1, positive ->  0
+    //  - 1: negative ->  0, positive -> ~0
+    //  ~  : negative -> ~0, positive ->  0
+    __m128i negative = ~(_mm_srli_epi64(a.d, 63) - 1);
 #endif
-    return _mm_add_epi64(xor_(a, negative), _mm_srli_epi64(a, 63));
-#endif
+    return (a.d ^ negative) - negative;
 }
-#endif  // Vc_HAVE_SSE2
+#endif  // Vc_HAVE_SSE2 && ! Vc_HAVE_AVX512VL
 
-Vc_INTRINSIC __m128  abs(x_f32 a) { return and_(a, setabsmask_ps_16()); }
-#ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC __m128d abs(x_f64 a) { return and_(a, setabsmask_pd_16()); }
-#endif // Vc_HAVE_SSE2
-
-#ifdef Vc_HAVE_AVX
-Vc_INTRINSIC __m256  abs(y_f32 a) { return and_(a, setabsmask_ps_32()); }
-Vc_INTRINSIC __m256d abs(y_f64 a) { return and_(a, setabsmask_pd_32()); }
-#endif  // Vc_HAVE_AVX
-
-#ifdef Vc_HAVE_AVX2
-Vc_INTRINSIC Vc_CONST __m256i abs(y_i08 a) { return _mm256_abs_epi8(a); }
-Vc_INTRINSIC Vc_CONST __m256i abs(y_i16 a) { return _mm256_abs_epi16(a); }
-Vc_INTRINSIC Vc_CONST __m256i abs(y_i32 a) { return _mm256_abs_epi32(a); }
-Vc_INTRINSIC Vc_CONST __m256i abs(y_i64 a)
+#if defined Vc_HAVE_AVX2 && !defined Vc_HAVE_AVX512VL
+Vc_INTRINSIC Vc_CONST y_i64 abs(y_i64 a)
 {
-#ifdef Vc_HAVE_AVX512VL
-    return _mm256_abs_epi64(a);
-#else
-    __m256i negative = _mm256_cmpgt_epi64(_mm256_setzero_si256(), a);
-    return _mm256_add_epi64(xor_(a, negative), _mm256_srli_epi64(a, 63));
-#endif
+    y_i64::register_type negative = a.d < 0;
+    return (a.d ^ negative) - negative;
 }
-#endif  // Vc_HAVE_AVX2
+#endif  // Vc_HAVE_AVX2 && !Vc_HAVE_AVX512VL
 
 #ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC __m512  abs(z_f32 a) { return and_(a, setabsmask_ps_64()); }
-Vc_INTRINSIC __m512d abs(z_f64 a) { return and_(a, setabsmask_pd_64()); }
-
 #ifdef Vc_HAVE_AVX512BW
-Vc_INTRINSIC Vc_CONST __m512i abs(z_i08 a) { return _mm512_abs_epi8(a); }
-Vc_INTRINSIC Vc_CONST __m512i abs(z_i16 a) { return _mm512_abs_epi16(a); }
+Vc_INTRINSIC Vc_CONST z_i08 abs(z_i08 a) { return _mm512_abs_epi8(a); }
+Vc_INTRINSIC Vc_CONST z_i16 abs(z_i16 a) { return _mm512_abs_epi16(a); }
 #endif  // Vc_HAVE_AVX512BW
-Vc_INTRINSIC Vc_CONST __m512i abs(z_i32 a) { return _mm512_abs_epi32(a); }
-Vc_INTRINSIC Vc_CONST __m512i abs(z_i64 a) { return _mm512_abs_epi64(a); }
+Vc_INTRINSIC Vc_CONST z_i32 abs(z_i32 a) { return _mm512_abs_epi32(a); }
+Vc_INTRINSIC Vc_CONST z_i64 abs(z_i64 a) { return _mm512_abs_epi64(a); }
 #endif  // Vc_HAVE_AVX512F
 
 // sqrt{{{1
-Vc_INTRINSIC __m128  Vc_VDECL sqrt(x_f32 v) { return _mm_sqrt_ps(v); }
+Vc_INTRINSIC x_f32 Vc_VDECL sqrt(x_f32 v) { return _mm_sqrt_ps(v); }
 #ifdef Vc_HAVE_SSE2
-Vc_INTRINSIC __m128d Vc_VDECL sqrt(x_f64 v) { return _mm_sqrt_pd(v); }
+Vc_INTRINSIC x_f64 Vc_VDECL sqrt(x_f64 v) { return _mm_sqrt_pd(v); }
 #endif  // Vc_HAVE_SSE2
 
 #ifdef Vc_HAVE_AVX
-Vc_INTRINSIC __m256  Vc_VDECL sqrt(y_f32 v) { return _mm256_sqrt_ps(v); }
-Vc_INTRINSIC __m256d Vc_VDECL sqrt(y_f64 v) { return _mm256_sqrt_pd(v); }
+Vc_INTRINSIC y_f32 Vc_VDECL sqrt(y_f32 v) { return _mm256_sqrt_ps(v); }
+Vc_INTRINSIC y_f64 Vc_VDECL sqrt(y_f64 v) { return _mm256_sqrt_pd(v); }
 #endif  // Vc_HAVE_AVX
 
 #ifdef Vc_HAVE_AVX512F
-Vc_INTRINSIC __m512  Vc_VDECL sqrt(z_f32 v) { return _mm512_sqrt_ps(v); }
-Vc_INTRINSIC __m512d Vc_VDECL sqrt(z_f64 v) { return _mm512_sqrt_pd(v); }
+Vc_INTRINSIC z_f32 Vc_VDECL sqrt(z_f32 v) { return _mm512_sqrt_ps(v); }
+Vc_INTRINSIC z_f64 Vc_VDECL sqrt(z_f64 v) { return _mm512_sqrt_pd(v); }
 #endif  // Vc_HAVE_AVX512F
 
 //}}}1
